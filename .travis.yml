@@ -12,7 +12,7 @@ addons:
       - cmake
       - libboost-program-options-dev
 script:
-  - ln -s /usr/bin/gcc-6 /usr/local/bin/gcc
-  - ln -s /usr/bin/g++-6 /usr/local/bin/g++
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 50
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50
   - cmake .
   - make
