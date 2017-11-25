@@ -1,0 +1,150 @@
+/**
+ * SAIL - A shallow/simple AI learning environment
+ * Copyright (C) 2017 Matthieu Lagacherie
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef SAIL_VW_WRAPPER_H
+#define SAIL_VW_WRAPPER_H
+
+#include <algorithm>
+#include <string>
+#include <vector>
+
+#include "vowpalwabbit/vw.h"
+
+#include "sail/redis_command.h"
+
+#define VWTYPE_ENCODING_VERSION 0
+
+namespace sail {
+
+extern RedisModuleType *VwType;
+
+struct VwTypeObject {
+  vw *vw_;
+  std::string parameters_;
+};
+
+/**
+ * This class is used to serialize / deserialize Vowpal wabbit mail object.
+ *
+ * The code behavior is inspired from the vowpal class memory_io_buf
+ * available in the vwdll.cpp file.
+ */
+class VwMemoryBuffer : public io_buf {
+ public:
+  VwMemoryBuffer();
+
+  ssize_t write_file(int fp, const void *data, size_t size) override;
+
+  ssize_t read_file(int fp, void *data, size_t size) override;
+
+  inline char *data() {
+    return data_.data();
+  }
+
+  inline size_t size() const {
+    return data_.size();
+  }
+
+ private:
+  std::vector<char> data_;
+  size_t read_offset_;
+};
+
+/**
+ * Create a new Vw type
+ *
+ * @param parameters vw parameters
+ * @return VwTypeObject wrapping vw main object
+ */
+struct VwTypeObject *createVwTypeObject(const char *parameters = 0);
+
+/**
+ * rdb_load is called when loading data from the RDB file. It loads data in
+ * the same format as rdb_save produces
+ *
+ * @param rdb
+ * @param encver
+ * @return
+ */
+void *vwTypeRdbLoad(RedisModuleIO *rdb, int encver);
+
+/**
+ * rdb_save is called when saving data to the RDB file
+ * @param rdb
+ * @param value
+ */
+void vwTypeRdbSave(RedisModuleIO *rdb, void *value);
+
+/**
+ * aof_rewrite is called when the AOF is being rewritten, and the module
+ * needs to tell Redis what
+ * is the sequence of commands to recreate the content of a given key
+ * @param aof
+ * @param key
+ * @param value
+ */
+void vwTypeAofRewrite(RedisModuleIO *aof, RedisModuleString *key, void *value);
+
+size_t vwTypeMemUsage(const void *value);
+
+/**
+ * free is called when a key with the module native type is deleted via DEL or in any other mean,
+ * in order to let the module reclaim the memory associated with such a value.
+ * @param value
+ */
+void vwTypeFree(void *value);
+
+int vwNewCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc);
+
+class VwPredictCommand : public RedisCommand {
+ public:
+  VwPredictCommand();
+  int run() override;
+};
+
+class VwFitCommand : public RedisCommand {
+ public:
+  VwFitCommand();
+
+  int run() override;
+};
+
+class VwInitCommand : public RedisCommand {
+ public:
+  VwInitCommand();
+
+  int run() override;
+};
+
+class VwGetCommand : public RedisCommand {
+ public:
+  VwGetCommand() : RedisCommand(2) {}
+
+  int run() override;
+};
+
+class VwNewCommand : public RedisCommand {
+ public:
+  VwNewCommand() : RedisCommand(3) {}
+
+  int run() override;
+};
+
+}
+
+#endif //SAIL_VW_WRAPPER_H
