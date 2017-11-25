@@ -26,14 +26,14 @@ int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
       REDISMODULE_ERR) {
     return REDISMODULE_ERR;
   }
-  RedisModuleTypeMethods tm = {
-      .version = REDISMODULE_TYPE_METHOD_VERSION,
-      .rdb_load = sail::vwTypeRdbLoad,
-      .rdb_save = sail::vwTypeRdbSave,
-      .aof_rewrite = sail::vwTypeAofRewrite,
-      .mem_usage = sail::vwTypeMemUsage,
-      .free = sail::vwTypeFree
-  };
+  RedisModuleTypeMethods tm;
+
+  tm.version = REDISMODULE_TYPE_METHOD_VERSION;
+  tm.rdb_load = sail::vwTypeRdbLoad;
+  tm.rdb_save = sail::vwTypeRdbSave;
+  tm.aof_rewrite = sail::vwTypeAofRewrite;
+  tm.mem_usage = sail::vwTypeMemUsage;
+  tm.free = sail::vwTypeFree;
 
   sail::VwType = RedisModule_CreateDataType(ctx, "Vowpal_Tp", 0, &tm);
 
