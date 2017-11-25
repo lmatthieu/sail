@@ -10,6 +10,7 @@ addons:
       - gcc
       - g++
       - cmake
+      - libboost-program-options-dev
 script:
   # Run your build commands next
   - cmake .
