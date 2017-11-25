@@ -1,0 +1,16 @@
+dist: trusty
+sudo: require
+language: cpp
+compiler: gcc
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc
+      - g++
+      - cmake
+script:
+  # Run your build commands next
+  - cmake .
+  - make
