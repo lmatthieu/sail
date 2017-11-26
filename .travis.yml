@@ -2,6 +2,7 @@ dist: trusty
 sudo: require
 language: cpp
 compiler: gcc
+cache: ccache
 python:
   - "2.7"
 addons:
@@ -13,6 +14,8 @@ addons:
       - g++-6
       - cmake
       - libboost-program-options-dev
+before_install:
+  - pip install --user cpp-coveralls
 install:
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 50
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50
@@ -24,3 +27,5 @@ before_script:
 script:
   - make
   - make test ARGS="-V"
+after_success:
+  - coveralls --exclude test --gcov-options '\-lp'
