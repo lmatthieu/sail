@@ -27,8 +27,8 @@ namespace sail {
 RedisModuleType *VwType = 0;
 
 struct VwTypeObject *createVwTypeObject(const char *parameters) {
-  struct VwTypeObject *vw;
-  vw = (struct VwTypeObject *) RedisModule_Alloc(sizeof(*vw));
+  auto vw = reinterpret_cast<VwTypeObject *>(RedisModule_Alloc(
+      sizeof (VwTypeObject)));
 
   if (parameters == 0) {
     vw->vw_ = NULL;
