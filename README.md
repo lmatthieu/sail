@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/lmatthieu/sail.svg?branch=master)](https://travis-ci.org/lmatthieu/sail/)
+[![Coverage Status](https://coveralls.io/repos/github/lmatthieu/sail/badge.svg?branch=master)](https://coveralls.io/github/lmatthieu/sail?branch=master)
 
 # README 
 
@@ -16,7 +17,7 @@ This package uses the CMake tool for building. CMake download automatically the
 dependencies:
 - Vowpal wabbit
 - Redis: used only for unit testing
-- RedisModulesSSK
+- RedisModulesSDK
 
 For the Vowpal wabbit package, boost libraries must be available.
 
