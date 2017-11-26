@@ -2,6 +2,8 @@ dist: trusty
 sudo: require
 language: cpp
 compiler: gcc
+python:
+  - "2.7"
 addons:
   apt:
     sources:
@@ -11,8 +13,11 @@ addons:
       - g++-6
       - cmake
       - libboost-program-options-dev
-script:
+install:
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 50
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50
+  - sudo pip install -U rmtest
+script:
   - cmake .
   - make
+  - make test
