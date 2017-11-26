@@ -4,7 +4,7 @@ ExternalProject_Add(
         PREFIX redis
         INSTALL_DIR ${CMAKE_BINARY_DIR}
         DOWNLOAD_COMMAND test -d redis/src/redis/Makefile && echo "redis \
-        directory already exists" || git clone --recursive https://github.com/antirez/redis.git
+        directory already exists" || git clone --recursive --branch 4.0.2 --depth 1 https://github.com/antirez/redis.git
         UPDATE_COMMAND git submodule foreach git pull origin master
         CONFIGURE_COMMAND pwd && make
         INSTALL_COMMAND ""
