@@ -17,7 +17,10 @@ install:
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 50
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50
   - sudo pip install -U rmtest
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ..
 script:
-  - cmake .
   - make
-  - make test
+  - make test ARGS="-V"
