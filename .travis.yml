@@ -26,13 +26,12 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyenv install 2.7.6   ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyenv global 2.7.6   ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyenv rehash   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install cpp-coveralls   ; fi
+  - pip install --user cpp-coveralls
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyenv rehash   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install --user cpp-coveralls ; fi
 install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 50 ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50 ; fi
-  - pip install -U rmtest
+  - pip install --user rmtest
 before_script:
   - mkdir build
   - cd build
