@@ -21,14 +21,14 @@ addons:
       - libboost-program-options-dev
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bbrew install pyenv   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then beval "$(pyenv init -)"   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bpyenv install 2.7.6   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bpyenv global 2.7.6   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bpyenv rehash   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bpip install cpp-coveralls   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bpyenv rehash   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bpip install --user cpp-coveralls
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pyenv   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then eval "$(pyenv init -)"   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyenv install 2.7.6   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyenv global 2.7.6   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyenv rehash   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install cpp-coveralls   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyenv rehash   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install --user cpp-coveralls
 install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 50 ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50 ; fi
