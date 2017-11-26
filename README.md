@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lmatthieu/sail.svg?branch=master)
+
 # README 
 
 ## Introduction
