@@ -3,8 +3,15 @@ project(sail)
 
 include(ExternalProject)
 
+option(CODE_COVERAGE "CODE_COVERAGE" OFF)
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -std=c++11 -g")
+
+if(CODE_COVERAGE)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Wc++11-extensions -std=c++11 -g -O0 --coverage")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -W -fno-common -std=c99 -g -O0 --coverage")
+endif(CODE_COVERAGE)
 
 include(cmake-modules/vowpal.cmake)
 include(cmake-modules/redis.cmake)
