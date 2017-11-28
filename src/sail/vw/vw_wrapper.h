@@ -35,7 +35,7 @@ extern RedisModuleType *VwType;
 
 struct VwTypeObject {
   vw *vw_;
-  std::string parameters_;
+  char parameters_[1024];
 };
 
 /**

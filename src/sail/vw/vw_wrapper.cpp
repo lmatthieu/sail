@@ -34,7 +34,7 @@ struct VwTypeObject *createVwTypeObject(const char *parameters) {
     vw->vw_ = NULL;
   } else {
     vw->vw_ = VW::initialize(parameters);
-    vw->parameters_ = parameters;
+    strncpy(vw->parameters_, parameters, strlen(parameters));
   }
   return vw;
 }
@@ -55,7 +55,7 @@ void *vwTypeRdbLoad(RedisModuleIO *rdb, int encver) {
   buf.write_file(-1, cbuf, size);
 
   vwto->vw_ = VW::initialize("", &buf);
-  vwto->parameters_ = params;
+  strncpy(vwto->parameters_, params, strlen(params));
 
   return vwto;
 }
@@ -68,10 +68,10 @@ void vwTypeRdbSave(RedisModuleIO *rdb, void *value) {
 
   RedisModule_SaveUnsigned(rdb, buf.size());
   RedisModule_SaveStringBuffer(rdb, buf.data(), buf.size());
-  RedisModule_SaveUnsigned(rdb, vwto->parameters_.size());
+  RedisModule_SaveUnsigned(rdb, strlen(vwto->parameters_));
   RedisModule_SaveStringBuffer(rdb,
-                               vwto->parameters_.data(),
-                               vwto->parameters_.size());
+                               vwto->parameters_,
+                               strlen(vwto->parameters_));
 }
 
 void vwTypeAofRewrite(RedisModuleIO *aof, RedisModuleString *key, void *value) {
@@ -83,7 +83,7 @@ void vwTypeAofRewrite(RedisModuleIO *aof, RedisModuleString *key, void *value) {
   sds obj_p = sdsempty();
 
   sdscatlen(obj_s, buf.data(), buf.size());
-  sdscatlen(obj_p, vwto->parameters_.data(), vwto->parameters_.size());
+  sdscatlen(obj_p, vwto->parameters_, strlen(vwto->parameters_));
 
   RedisModule_EmitAOF(aof, "SAIL.VW.INIT", "sbb", key, obj_p, sdslen(obj_p),
                       obj_s, sdslen(obj_s));
@@ -205,7 +205,7 @@ int VwInitCommand::run() {
   auto vwto = createVwTypeObject();
 
   vwto->vw_ = VW::initialize("", &buf);
-  vwto->parameters_ = params;
+  strncpy(vwto->parameters_, params, strlen(params));
 
   if (type != REDISMODULE_KEYTYPE_EMPTY) {
     RedisModule_DeleteKey(key);
@@ -231,7 +231,7 @@ int VwGetCommand::run() {
   struct VwTypeObject
       *data = (struct VwTypeObject *) RedisModule_ModuleTypeGetValue(key);
 
-  RedisModule_ReplyWithSimpleString(context(), data->parameters_.c_str());
+  RedisModule_ReplyWithSimpleString(context(), data->parameters_);
   return REDISMODULE_OK;
 }
 
