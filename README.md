@@ -32,4 +32,26 @@ pip install rmtest
 make test ARGS="-V"
 ```
 
+## Debugging
 
+In the *build* directory.
+
+- Build redis with noopt
+```bash 
+(cd redis/src/redis/ && make clean noopt)
+```
+
+- Start redis server
+```bash
+./redis/src/redis/src/redis-server --loadmodule src/libsail.so
+```
+
+- Get redis server process id
+```bash
+./redis/src/redis/src/redis-cli info | grep process_id
+```
+
+- Attach GDB
+```bash
+gdb ./redis/src/redis/src/redis-cli $process_id
+```
