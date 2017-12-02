@@ -3,10 +3,8 @@ sudo: require
 language: cpp
 os:
   - linux
-  - osx
 compiler:
   - gcc
-  - clang
 cache: ccache
 python:
   - "2.7"
@@ -39,4 +37,4 @@ script:
   - make
   - make test ARGS="-V"
 after_success:
-  - coveralls --exclude test --exclude redis --exclude vowpal_wabbit --exclude redis_modules_sdk --gcov-options '\-lp'
+  - coveralls --exclude CMakeFiles --exclude test --exclude redis --exclude vowpal_wabbit --exclude redis_modules_sdk --gcov-options '\-lp'
