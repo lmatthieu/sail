@@ -37,4 +37,8 @@ script:
   - make
   - make test ARGS="-V"
 after_success:
-  - coveralls -i src --exclude CMakeFiles --exclude test --exclude redis --exclude vowpal_wabbit --exclude redis_modules_sdk --gcov-options '\-lp'
+#  - coveralls -i src --exclude CMakeFiles --exclude test --exclude redis --exclude vowpal_wabbit --exclude redis_modules_sdk --gcov-options '\-lp'
+  - lcov --directory . --capture --output-file coverage.info
+  - lcov --remove coverage.info 'redis/*' 'vowpal_wabbit/*' 'redis_modules_sdk/*' 'test/*' '/usr/*' --output-file coverage.info
+  - lcov --list coverage.info
+  - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info
