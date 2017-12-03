@@ -23,6 +23,17 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
             self.assertExists(r, 'm0')
             self.assertEqual(r.execute_command('sail.vw.get', 'm0'), params)
 
+    def testVwRDBLoadSave(self):
+        self.assertTrue(self.server)
+        self.assertTrue(self.client)
+        params = '-b 28 -l 0.2 --quiet'
+        with self.redis() as r:
+            self.assertIsNone(r.execute_command('sail.vw.new', 'm0', params))
+            self.assertExists(r, 'm0')
+            self.retry_with_reload()
+            self.assertExists(r, 'm0')
+            self.assertEqual(r.execute_command('sail.vw.get', 'm0'), params)
+
     def testVwRewriteAOF(self):
         self.assertTrue(self.server)
         self.assertTrue(self.client)
@@ -33,6 +44,8 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
             self.restart_and_reload()
             self.assertExists(r, 'm0')
             self.assertEqual(r.execute_command('sail.vw.get', 'm0'), params)
+
+
 
     def testVwLearn(self):
         self.assertTrue(self.server)
