@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/lmatthieu/sail.svg?branch=master)](https://travis-ci.org/lmatthieu/sail/)
-[![Coverage Status](https://coveralls.io/repos/github/lmatthieu/sail/badge.svg?branch=master)](https://coveralls.io/github/lmatthieu/sail?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/lmatthieu/sail/badge.png?branch=master)](https://coveralls.io/github/lmatthieu/sail?branch=master)
 
 # README 
 
