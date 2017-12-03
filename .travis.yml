@@ -30,6 +30,7 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 50 ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50 ; fi
   - pip install --user rmtest
+  - gem install coveralls-lcov
 before_script:
   - mkdir build
   - cd build
