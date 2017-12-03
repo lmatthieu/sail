@@ -1,6 +1,8 @@
 import unittest
 from rmtest import ModuleTestCase
 import os, time
+import redis
+import logging
 
 module_path = os.environ['REDIS_MODULE_PATH']
 redis_path = os.environ['REDIS_SERVER_PATH']
@@ -46,7 +48,10 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
             self.assertExists(r, 'm0')
             self.assertEqual(r.execute_command('sail.vw.get', 'm0'), params)
 
-
+    def test_vw_predict_should_return_error(self):
+        with self.redis() as r:
+            with self.assertRaises(redis.ResponseError) as context:
+                r.execute_command('sail.vw.predict', 'm0', '')
 
     def testVwLearn(self):
         self.assertTrue(self.server)
