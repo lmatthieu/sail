@@ -30,7 +30,8 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
         with self.redis() as r:
             self.assertIsNone(r.execute_command('sail.vw.new', 'm0', params))
             self.assertExists(r, 'm0')
-            self.retry_with_reload()
+            self.assertEqual(r.execute_command('save'), 'OK')
+            self.assertEqual(r.execute_command('DEBUG', 'RELOAD'), 'OK')
             self.assertExists(r, 'm0')
             self.assertEqual(r.execute_command('sail.vw.get', 'm0'), params)
 
