@@ -34,7 +34,7 @@ struct VwTypeObject *createVwTypeObject(const char *parameters) {
     vw->vw_ = NULL;
   } else {
     vw->vw_ = VW::initialize(parameters);
-    strncpy(vw->parameters_, parameters, strlen(parameters));
+    strncpy(vw->parameters_, parameters, VW_PARAMS_SIZE);
   }
   return vw;
 }
@@ -55,7 +55,7 @@ void *vwTypeRdbLoad(RedisModuleIO *rdb, int encver) {
   buf.write_file(-1, cbuf, size);
 
   vwto->vw_ = VW::initialize("", &buf);
-  strncpy(vwto->parameters_, params, strlen(params));
+  strncpy(vwto->parameters_, params, VW_PARAMS_SIZE);
 
   return vwto;
 }
@@ -68,10 +68,10 @@ void vwTypeRdbSave(RedisModuleIO *rdb, void *value) {
 
   RedisModule_SaveUnsigned(rdb, buf.size());
   RedisModule_SaveStringBuffer(rdb, buf.data(), buf.size());
-  RedisModule_SaveUnsigned(rdb, strlen(vwto->parameters_));
+  RedisModule_SaveUnsigned(rdb, VW_PARAMS_SIZE);
   RedisModule_SaveStringBuffer(rdb,
                                vwto->parameters_,
-                               strlen(vwto->parameters_));
+                               VW_PARAMS_SIZE);
 }
 
 void vwTypeAofRewrite(RedisModuleIO *aof, RedisModuleString *key, void *value) {
@@ -83,7 +83,7 @@ void vwTypeAofRewrite(RedisModuleIO *aof, RedisModuleString *key, void *value) {
   sds obj_p = sdsempty();
 
   sdscatlen(obj_s, buf.data(), buf.size());
-  sdscatlen(obj_p, vwto->parameters_, strlen(vwto->parameters_));
+  sdscatlen(obj_p, vwto->parameters_, VW_PARAMS_SIZE);
 
   RedisModule_EmitAOF(aof, "SAIL.VW.INIT", "sbb", key, obj_p, sdslen(obj_p),
                       obj_s, sdslen(obj_s));
@@ -205,7 +205,7 @@ int VwInitCommand::run() {
   auto vwto = createVwTypeObject();
 
   vwto->vw_ = VW::initialize("", &buf);
-  strncpy(vwto->parameters_, params, strlen(params));
+  strncpy(vwto->parameters_, params, VW_PARAMS_SIZE);
 
   if (type != REDISMODULE_KEYTYPE_EMPTY) {
     RedisModule_DeleteKey(key);

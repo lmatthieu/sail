@@ -57,7 +57,7 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
         self.assertTrue(self.server)
         self.assertTrue(self.client)
         params = "-k -l 20 --initial_t 128000 --power_t 1 -c --passes 8 " \
-                 "--invariant --ngram 3 --skips 1 --holdout_off"
+                 "--invariant --ngram 3 --skips 1 --holdout_off --quiet"
         with self.redis() as r:
             r.execute_command('sail.vw.new', 'm0', params)
             self.assertExists(r, "m0")

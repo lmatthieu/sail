@@ -28,6 +28,7 @@
 #include "sail/redis_command.h"
 
 #define VWTYPE_ENCODING_VERSION 0
+#define VW_PARAMS_SIZE 1024
 
 namespace sail {
 
@@ -35,7 +36,7 @@ extern RedisModuleType *VwType;
 
 struct VwTypeObject {
   vw *vw_;
-  char parameters_[1024];
+  char parameters_[VW_PARAMS_SIZE];
 };
 
 /**
