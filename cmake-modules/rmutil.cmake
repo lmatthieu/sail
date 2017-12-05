@@ -12,5 +12,5 @@ ExternalProject_Add(
         BUILD_IN_SOURCE 1
         EXCLUDE_FROM_ALL 1
 )
-set(RMUTIL_INCLUDE_PATH "${CMAKE_BINARY_DIR}/redis_modules_sdk/src/redis_modules_sdk")
+set(RMUTIL_INCLUDE_PATH "${CMAKE_BINARY_DIR}/redis_modules_sdk/src")
 set(RMUTIL_LIB_PATH "${CMAKE_BINARY_DIR}/redis_modules_sdk/src/redis_modules_sdk/rmutil")

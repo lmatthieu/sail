@@ -18,7 +18,7 @@ include(cmake-modules/vowpal.cmake)
 include(cmake-modules/redis.cmake)
 include(cmake-modules/rmutil.cmake)
 
-INCLUDE_DIRECTORIES(src ${VW_INC_DIR} ${RMUTIL_INCLUDE_PATH})
+INCLUDE_DIRECTORIES(src src/sail ${VW_INC_DIR} ${RMUTIL_INCLUDE_PATH})
 link_directories(${VW_LIB_DIR} ${RMUTIL_LIB_PATH})
 
 add_subdirectory(src)

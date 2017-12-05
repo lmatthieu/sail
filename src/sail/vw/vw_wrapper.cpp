@@ -19,7 +19,7 @@
 #include "sail/vw/vw_wrapper.h"
 
 extern "C" {
-#include <rmutil/sds.h>
+#include <redis_modules_sdk/rmutil/sds.h>
 }
 
 namespace sail {

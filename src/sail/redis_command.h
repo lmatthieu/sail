@@ -21,7 +21,7 @@
 
 #include <vector>
 
-#include "rmutil/util.h"
+#include "redis_modules_sdk/rmutil/util.h"
 
 namespace sail {
 
