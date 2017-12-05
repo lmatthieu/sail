@@ -10,7 +10,7 @@ vw_path = os.environ['VW_BUILD_PATH']
 
 
 class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
-    def testCreate(self):
+    def test_vw_new_should_create_model(self):
         with self.redis() as r:
             self.assertIsNone(r.execute_command('sail.vw.new', 'm0',
                                                 '-b 28 -l 0.1 --quiet'))
@@ -25,7 +25,7 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
             self.assertExists(r, 'm0')
             self.assertEqual(r.execute_command('sail.vw.get', 'm0'), params)
 
-    def testVwRDBLoadSave(self):
+    def test_vw_rdb_should_save_model(self):
         self.assertTrue(self.server)
         self.assertTrue(self.client)
         params = '-b 28 -l 0.2 --quiet'
