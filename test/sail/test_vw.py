@@ -37,7 +37,7 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
             self.assertExists(r, 'm0')
             self.assertEqual(r.execute_command('sail.vw.get', 'm0'), params)
 
-    def testVwRewriteAOF(self):
+    def test_vw_aofrewrite_should_save_model(self):
         self.assertTrue(self.server)
         self.assertTrue(self.client)
         params = '-b 28 -l 0.2 --quiet'
