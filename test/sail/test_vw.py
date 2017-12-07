@@ -53,7 +53,7 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
             with self.assertRaises(redis.ResponseError) as context:
                 r.execute_command('sail.vw.predict', 'm0', '')
 
-    def testVwLearn(self):
+    def test_vw_prediction_with_save_should_match(self):
         self.assertTrue(self.server)
         self.assertTrue(self.client)
         params = "-k -l 20 --initial_t 128000 --power_t 1 -c --passes 8 " \
