@@ -44,7 +44,11 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
         with self.redis() as r:
             self.assertIsNone(r.execute_command('sail.vw.new', 'm0', params))
             self.assertExists(r, 'm0')
-            self.restart_and_reload()
+            self.assertEqual(r.execute_command('BGREWRITEAOF'), True)
+            self._server._wait_for_child()
+            self._server.stop(for_restart=True)
+            self._server.start()
+            self._client = self._server.client()
             self.assertExists(r, 'm0')
             self.assertEqual(r.execute_command('sail.vw.get', 'm0'), params)
 

@@ -87,8 +87,8 @@ void vwTypeAofRewrite(RedisModuleIO *aof, RedisModuleString *key, void *value) {
 
   RedisModule_EmitAOF(aof, "SAIL.VW.INIT", "sbb", key, obj_p, sdslen(obj_p),
                       obj_s, sdslen(obj_s));
-  sdsfree(obj_s);
-  sdsfree(obj_p);
+  //sdsfree(obj_s);
+  //sdsfree(obj_p);
 }
 
 size_t vwTypeMemUsage(const void *value) {
