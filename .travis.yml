@@ -22,7 +22,7 @@ addons:
 env:
   global:
     - TOOLS_PATH="$HOME/tools"
-    - LCOV_PATH="$TOOLS_PATH/lcov-1.11"
+    - LCOV_PATH="$TOOLS_PATH/lcov-1.13"
     - LCOV="$LCOV_PATH/bin/lcov"
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade pyenv   ; fi
