@@ -4,7 +4,7 @@ language: cpp
 os:
   - linux
 compiler:
-  - clang
+  - gcc
 cache: ccache
 python:
   - "2.7"
@@ -14,10 +14,12 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - lcov
-      #- gcc-4.8
-      #- g++-4.8
+      - gcc-6
+      - g++-6
+      - valgrind
       - cmake
       - libboost-program-options-dev
+env: COMPILER=g++-6
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade pyenv   ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then eval "$(pyenv init -)"   ; fi
@@ -27,8 +29,8 @@ before_install:
   - pip install --user cpp-coveralls
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pyenv rehash   ; fi
 install:
-#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50 ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 50 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 50 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50 ; fi
   - pip install --user rmtest
   - gem install coveralls-lcov
   - lcov --version
