@@ -40,6 +40,7 @@ install:
   - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.13.orig.tar.gz
   - tar -xvf lcov_1.13.orig.tar.gz
   - cp -r lcov-1.13 $TOOLS_PATH
+  - ls $TOOLS_PATH
   - make -C $LCOV_PATH
   - $LCOV --version
 before_script:
