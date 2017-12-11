@@ -19,7 +19,11 @@ addons:
       - valgrind
       - cmake
       - libboost-program-options-dev
-env: COMPILER=g++-6
+env:
+  global:
+    - TOOLS_PATH="$HOME/tools"
+    - LCOV_PATH="$TOOLS_PATH/lcov-1.11"
+    - LCOV="$LCOV_PATH/bin/lcov"
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade pyenv   ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then eval "$(pyenv init -)"   ; fi
@@ -33,7 +37,9 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50 ; fi
   - pip install --user rmtest
   - gem install coveralls-lcov
-  - lcov --version
+  - wget -O - --no-check-certificate http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.11.orig.tar.gz | tar xz && cp -r lcov-1.11 $TOOLS_PATH
+  - make -C $LCOV_PATH
+  - $LCOV --version
 before_script:
   - mkdir build
   - cd build
@@ -42,7 +48,7 @@ script:
   - make
   - make test ARGS="-V"
 after_success:
-  - lcov --directory . --capture --output-file coverage.info
-  - lcov --remove coverage.info 'redis/*' 'vowpal_wabbit/*' 'redis_modules_sdk/*' 'test/*' '/usr/*' --output-file coverage.info
-  - lcov --list coverage.info
+  - $LCOV --directory . --capture --output-file coverage.info
+  - $LCOV --remove coverage.info 'redis/*' 'vowpal_wabbit/*' 'redis_modules_sdk/*' 'test/*' '/usr/*' --output-file coverage.info
+  - $LCOV --list coverage.info
   - coveralls-lcov --repo-token ${COVERALLS_REPO_TOKEN} coverage.info
