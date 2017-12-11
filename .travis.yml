@@ -5,7 +5,12 @@ os:
   - linux
 compiler:
   - gcc
-cache: ccache
+cache:
+  apt: true
+  directories:
+    - ccache
+    - $HOME/.ccache
+    - $TOOLS_DIR
 python:
   - "2.7"
 addons:
