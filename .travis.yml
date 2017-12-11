@@ -4,7 +4,7 @@ language: cpp
 os:
   - linux
 compiler:
-  - gcc
+  - clang
 cache: ccache
 python:
   - "2.7"
@@ -14,7 +14,6 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - lcov
-      - clang-3.6
       #- gcc-4.8
       #- g++-4.8
       - cmake
