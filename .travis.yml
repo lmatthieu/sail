@@ -37,7 +37,7 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50 ; fi
   - pip install --user rmtest
   - gem install coveralls-lcov
-  - wget -O - --no-check-certificate http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.11.orig.tar.gz | tar xz && cp -r lcov-1.11 $TOOLS_PATH
+  - wget -O - --no-check-certificate http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.13.orig.tar.gz | tar xz && cp -r lcov-1.13 $TOOLS_PATH
   - make -C $LCOV_PATH
   - $LCOV --version
 before_script:
