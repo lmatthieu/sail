@@ -17,6 +17,7 @@
 */
 
 #include "sail/vw/vw_wrapper.h"
+#include "sail/sail_rei.h"
 
 int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   REDISMODULE_NOT_USED(argv);
@@ -45,6 +46,7 @@ int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   sail::register_command<sail::VwInitCommand>(ctx, "sail.vw.init");
   sail::register_command<sail::VwGetCommand>(ctx, "sail.vw.get");
   sail::register_command<sail::VwNewCommand>(ctx, "sail.vw.new");
+  sail::register_command<sail::ReiNew>(ctx, "sail.rei.new");
 
   return REDISMODULE_OK;
 }

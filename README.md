@@ -55,3 +55,13 @@ In the *build* directory.
 ```bash
 gdb ./redis/src/redis/src/redis-cli $process_id
 ```
+
+## Online & Reinforcement learning (Work in progress)
+
+The commands SAIL.REI.* try to implement generic online learning algorithms. 
+This module is under construction and is not complete.
+
+You can manipulate two kind of objects :
+- Models: stored as vowpal wabbit models
+- Examples: examples are values tracked during the interactions with the algorithm
+
