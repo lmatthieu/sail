@@ -25,4 +25,20 @@ RedisModuleKey *RedisCommand::openKey(RedisModuleString *key, int mode) {
                                                                 key, mode));
 }
 
+int RedisCommand::exists(RedisModuleString *key) {
+  RedisModuleCallReply *rep = RedisModule_Call(context(), "EXISTS",
+                                               "s", key);
+
+  if (RedisModule_CallReplyType(rep) == REDISMODULE_REPLY_INTEGER) {
+    return (int)RedisModule_CallReplyInteger(rep);
+  }
+  return -1;
+}
+
+RedisModuleString *RedisCommand::createString(const char *ptr, size_t len) {
+  if (len == 0)
+    len = strlen(ptr);
+  return RedisModule_CreateString(context(), ptr, len);
+}
+
 }

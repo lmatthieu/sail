@@ -25,17 +25,16 @@
 namespace sail {
 
 /**
- * SAIL.REI.NEW creates a new model based on a vowpal wabbit model.
+ * SAIL.REI.NEW creates a new vowpal wabbit model.
  *
  * This command takes in input:
- * - model repository
- * - model name, must be unique (registered globaly as key)
+ * - model repository, must be unique. Registered globally as HSET storing all
+ * model metadata.
  * - model parameters compatible with vowpal wabbit parameters
- * - memory namespace, must be unique. Stored as a sorted set
  */
 class ReiNew : public RedisCommand {
  public:
-  ReiNew() : RedisCommand(5) {}
+  ReiNew() : RedisCommand(3) {}
 
   int run() override;
 };

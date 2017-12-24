@@ -8,28 +8,40 @@ vw_path = os.environ['VW_BUILD_PATH']
 
 
 class SAILReiTestCase(ModuleTestCase(module_path, redis_path)):
+    MODEL_REPO = "*rei-m0*"
+    MODEL_PARAMS = '-b 28 -l 0.1'
+
+    def test_rei_new_should_create_metadata(self):
+        with self.redis() as r:
+            self.assertIsNone(r.execute_command('sail.rei.new',
+                                                self.MODEL_REPO,
+                                                self.MODEL_PARAMS))
+            self.assertExists(r, self.MODEL_REPO)
+            self.assertEqual(r.execute_command('hmget', self.MODEL_REPO,
+                                               "model", "memory", "parameters"),
+                             [self.MODEL_REPO + ":model",
+                              self.MODEL_REPO + ":memory",
+                              self.MODEL_PARAMS])
+
     def test_rei_new_should_create_model(self):
         with self.redis() as r:
             self.assertIsNone(r.execute_command('sail.rei.new',
-                                                '*rei-models*',
-                                                'm0',
-                                                '-b 28 -l 0.1',
-                                                '*m0-memory*'))
-            self.assertExists(r, 'm0')
+                                                self.MODEL_REPO,
+                                                self.MODEL_PARAMS))
+            model_name = r.execute_command('hget', self.MODEL_REPO, 'model')
+            self.assertExists(r, model_name)
 
-    def test_rei_new_should_register_model(self):
+    def test_rei_new_should_throw_error_with_key_conflict(self):
         with self.redis() as r:
-            self.assertIsNone(r.execute_command('sail.rei.new',
-                                                '*rei-models*',
-                                                'm0',
-                                                '-b 28 -l 0.1 --quiet',
-                                                '*m0-memory*'))
-            self.assertEqual(r.execute_command('hexists', '*rei-models*', 'm0'),
-                             1)
-            self.assertEqual(r.execute_command('hget', '*rei-models*', 'm0'),
-                             '*m0-memory*')
+            r.execute_command('SET', 'testkey', '1')
+            try:
+                r.execute_command('sail.rei.new',
+                                  'testkey',
+                                  self.MODEL_PARAMS)
+            except Exception as ex:
+                self.assertTrue(ex.message.startswith(
+                    'Conflict while creating keys'))
 
 
 if __name__ == '__main__':
     unittest.main()
-

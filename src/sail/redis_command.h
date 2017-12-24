@@ -43,6 +43,23 @@ class RedisCommand {
   RedisModuleKey *openKey(RedisModuleString *key, int mode = REDISMODULE_READ
       | REDISMODULE_WRITE);
 
+  /**
+   * Test the existence of a key in redis
+   *
+   * @param key the key to test
+   * @return -1 if error, 1 if the key exists, 0 if the key does not exist.
+   */
+  int exists(RedisModuleString *key);
+
+  /**
+   * Creates a new RedisModuleString from a C string buffer
+   *
+   * @param ptr char buffer
+   * @param len len of buffer, if 0 then strlen function is called
+   * @return a RedisModuleString object
+   */
+  RedisModuleString *createString(const char *ptr, size_t len = 0);
+
  private:
   int nbargs_;
   RedisModuleCtx *ctx_;
