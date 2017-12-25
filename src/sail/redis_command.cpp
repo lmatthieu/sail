@@ -18,6 +18,8 @@
 
 #include <sail/redis_command.h>
 
+#include <cstring>
+
 namespace sail {
 
 RedisModuleKey *RedisCommand::openKey(RedisModuleString *key, int mode) {
