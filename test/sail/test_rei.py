@@ -9,7 +9,7 @@ vw_path = os.environ['VW_BUILD_PATH']
 
 class SAILReiTestCase(ModuleTestCase(module_path, redis_path)):
     MODEL_REPO = "*rei-m0*"
-    MODEL_PARAMS = '-b 28 -l 0.1'
+    MODEL_PARAMS = '-b 28 -l 0.1 --quiet'
 
     def test_rei_new_should_create_metadata(self):
         with self.redis() as r:
