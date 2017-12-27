@@ -17,6 +17,7 @@
 */
 
 #include "sail/sail_rei.h"
+#include "sail/vw/vw_wrapper.h"
 
 namespace sail {
 
@@ -66,6 +67,44 @@ int ReiNew::run() {
   return REDISMODULE_OK;
 }
 
+int ReiPredict::run() {
+  RedisModuleString *model_repo_rs = args(1);
+  RedisModuleString *model_example_rs = args(2);
+
+  // get model metadatas
+  RedisModuleCallReply *rep = RedisModule_Call(context(), "HMGET",
+                                               "sss", model_repo_rs,
+                                               createString("model"),
+                                               createString("memory"));
+
+  if (RedisModule_CallReplyType(rep) != REDISMODULE_REPLY_ARRAY
+      || RedisModule_CallReplyLength(rep) != 2) {
+    return RedisModule_ReplyWithError(context(),
+                                      "Cannot get model metadata.");
+  }
+  auto model_reply = RedisModule_CallReplyArrayElement(rep, 0);
+  auto model_rs = RedisModule_CreateStringFromCallReply(model_reply);
+  auto example_reply = RedisModule_CallReplyArrayElement(rep, 1);
+  auto example_rs = RedisModule_CreateStringFromCallReply(example_reply);
+
+  /////////////////////
+  // get the prediction
+  VwTypeObject *vwto = getVwType(model_rs);
+
+  // we read example data
+  size_t l1;
+  const char *ex_str = RedisModule_StringPtrLen(example_rs, &l1);
+
+  example *ex = VW::read_example(*vwto->vw_, ex_str);
+  vwto->vw_->l->predict(*ex);
+
+  RedisModule_ReplyWithDouble(context(), ex->partial_prediction);
+  VW::finish_example(*vwto->vw_, ex);
+
+  // add example to the memory
+
+  return 0;
+}
 }
 
 

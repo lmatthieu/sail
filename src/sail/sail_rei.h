@@ -20,6 +20,7 @@
 #define SAIL_REI_H
 
 #include "sail/redis_command.h"
+#include "sail/vw/vw_wrapper.h"
 #include "redis_command.h"
 
 namespace sail {
@@ -38,6 +39,21 @@ class ReiNew : public RedisCommand {
 
   int run() override;
 };
+
+/**
+ * SAIL.REI.PREDICT predict and learn from an existing model.
+ *
+ * Arguments:
+ * - model repository
+ * - example to predict
+ */
+class ReiPredict : public VwAccessor {
+ public:
+  ReiPredict() : VwAccessor(3) {}
+
+  int run() override;
+};
+
 
 }
 

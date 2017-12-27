@@ -112,15 +112,21 @@ void vwTypeFree(void *value);
 
 int vwNewCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc);
 
-class VwPredictCommand : public RedisCommand {
+class VwAccessor : public RedisCommand {
  public:
-  VwPredictCommand();
+  VwAccessor(int nbargs) : RedisCommand(nbargs) {}
+  VwTypeObject *getVwType(RedisModuleString *key);
+};
+
+class VwPredictCommand : public VwAccessor {
+ public:
+  VwPredictCommand() : VwAccessor(3) {};
   int run() override;
 };
 
-class VwFitCommand : public RedisCommand {
+class VwFitCommand : public VwAccessor {
  public:
-  VwFitCommand();
+  VwFitCommand() : VwAccessor(3) {};
 
   int run() override;
 };

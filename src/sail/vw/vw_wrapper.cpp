@@ -123,22 +123,13 @@ ssize_t VwMemoryBuffer::read_file(int fp, void *data, size_t size) {
   return size;
 }
 
-VwPredictCommand::VwPredictCommand() : RedisCommand(3) {}
-
 int VwPredictCommand::run() {
-  auto key = openKey(args(1));
-  int type = RedisModule_KeyType(key);
+  VwTypeObject *vwto = getVwType(args(1));
 
-  // we test if the key is not empty and that the key have the right type
-  if (type == REDISMODULE_KEYTYPE_EMPTY ||
-      RedisModule_ModuleTypeGetType(key) != VwType) {
-    return RedisModule_ReplyWithError(context(), REDISMODULE_ERRORMSG_WRONGTYPE);
+  if (vwto == nullptr) {
+    return RedisModule_ReplyWithError(context(),
+                                      REDISMODULE_ERRORMSG_WRONGTYPE);
   }
-
-  // If the key is not empty
-  struct VwTypeObject
-      *vwto = reinterpret_cast<VwTypeObject *>(
-      RedisModule_ModuleTypeGetValue(key));
 
   // we read example data
   size_t l1;
@@ -153,21 +144,13 @@ int VwPredictCommand::run() {
   return REDISMODULE_OK;
 }
 
-VwFitCommand::VwFitCommand() : RedisCommand(3) {}
 int VwFitCommand::run() {
-  auto key = openKey(args(1));
-  int type = RedisModule_KeyType(key);
+  VwTypeObject *vwto = getVwType(args(1));
 
-  // we test if the key is not empty and that the key have the right type
-  if (type == REDISMODULE_KEYTYPE_EMPTY ||
-      RedisModule_ModuleTypeGetType(key) != VwType) {
-    return RedisModule_ReplyWithError(context(), REDISMODULE_ERRORMSG_WRONGTYPE);
+  if (vwto == nullptr) {
+    return RedisModule_ReplyWithError(context(),
+                                      REDISMODULE_ERRORMSG_WRONGTYPE);
   }
-
-  // If the key is not empty
-  struct VwTypeObject
-      *vwto = reinterpret_cast<VwTypeObject *>(
-      RedisModule_ModuleTypeGetValue(key));
 
   // we read example data
   size_t l1;
@@ -259,4 +242,23 @@ int VwNewCommand::run() {
   RedisModule_ReplyWithNull(context());
   return REDISMODULE_OK;
 }
+
+VwTypeObject *VwAccessor::getVwType(RedisModuleString *key_rs) {
+  auto key = openKey(key_rs);
+  int type = RedisModule_KeyType(key);
+
+  // we test if the key is not empty and that the key have the right type
+  if (type == REDISMODULE_KEYTYPE_EMPTY ||
+      RedisModule_ModuleTypeGetType(key) != VwType) {
+    return nullptr;
+  }
+
+  // If the key is not empty
+  struct VwTypeObject
+      *vwto = reinterpret_cast<VwTypeObject *>(
+      RedisModule_ModuleTypeGetValue(key));
+
+  return vwto;
+}
+
 }
