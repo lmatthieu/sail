@@ -1,6 +1,7 @@
 import unittest
 from rmtest import ModuleTestCase
 import os
+import redis
 
 module_path = os.environ['REDIS_MODULE_PATH']
 redis_path = os.environ['REDIS_SERVER_PATH']
@@ -18,10 +19,13 @@ class SAILReiTestCase(ModuleTestCase(module_path, redis_path)):
                                                 self.MODEL_PARAMS))
             self.assertExists(r, self.MODEL_REPO)
             self.assertEqual(r.execute_command('hmget', self.MODEL_REPO,
-                                               "model", "memory", "parameters"),
+                                               "model", "memory",
+                                               "parameters",
+                                               "eventid"),
                              [self.MODEL_REPO + ":model",
                               self.MODEL_REPO + ":memory",
-                              self.MODEL_PARAMS])
+                              self.MODEL_PARAMS,
+                              '0'])
 
     def test_rei_new_should_create_model(self):
         with self.redis() as r:
@@ -41,6 +45,11 @@ class SAILReiTestCase(ModuleTestCase(module_path, redis_path)):
             except Exception as ex:
                 self.assertTrue(ex.message.startswith(
                     'Conflict while creating keys'))
+
+    def test_rei_act_without_repo_should_return_error(self):
+        with self.redis() as r:
+            with self.assertRaises(redis.ResponseError) as context:
+                r.execute_command('sail.rei.act', 'm0', "example")
 
 
 if __name__ == '__main__':

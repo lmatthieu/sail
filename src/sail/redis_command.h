@@ -25,18 +25,29 @@
 
 namespace sail {
 
+typedef long long sailbigint;
+
 class RedisCommand {
  public:
-  explicit RedisCommand(int nbargs) : nbargs_(nbargs) {}
+  explicit RedisCommand(int minnbargs) : nbargs_(minnbargs) {}
 
   void init(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
     ctx_ = ctx;
     for (size_t i = 0; i < argc; ++i)
       args_.push_back(argv[i]);
   }
+
   inline RedisModuleCtx *context() { return ctx_; }
-  inline RedisModuleString *args(size_t i) { return args_[i]; }
-  inline int getNbArgs() { return nbargs_; }
+
+  inline RedisModuleString *args(size_t i) {
+    if (i < args_.size())
+      return args_[i];
+    return nullptr;
+  }
+
+  inline int getMinNbArgs() { return nbargs_; }
+
+  inline size_t getNbArgs() const { return args_.size(); }
 
   virtual int run() = 0;
 
@@ -60,6 +71,12 @@ class RedisCommand {
    */
   RedisModuleString *createString(const char *ptr, size_t len = 0);
 
+  /**
+   * HINCRBY REDIS command wrapper
+   */
+  sailbigint hincrby(RedisModuleString *key,
+                     RedisModuleString *field, sailbigint increment = 1);
+
  private:
   int nbargs_;
   RedisModuleCtx *ctx_;
@@ -71,7 +88,7 @@ static int run_command(RedisModuleCtx *ctx, RedisModuleString **argv, int
 argc) {
   Command cmd;
 
-  if (argc != cmd.getNbArgs()) {
+  if (argc < cmd.getMinNbArgs()) {
     return RedisModule_WrongArity(ctx);
   }
   RedisModule_AutoMemory(ctx);

@@ -41,15 +41,18 @@ class ReiNew : public RedisCommand {
 };
 
 /**
- * SAIL.REI.PREDICT predict and learn from an existing model.
+ * SAIL.REI.ACT predict and learn from an existing model with
+ * exploration/exploitation
  *
  * Arguments:
  * - model repository
  * - example to predict
+ * - default action id (optional)
+ * - force eventid (default null)
  */
-class ReiPredict : public VwAccessor {
+class ReiAct : public VwAccessor {
  public:
-  ReiPredict() : VwAccessor(3) {}
+  ReiAct() : VwAccessor(3) {}
 
   int run() override;
 };

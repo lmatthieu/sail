@@ -53,10 +53,11 @@ int ReiNew::run() {
 
   // saving the model in the repository
   rep = RedisModule_Call(context(), "HMSET",
-                         "sssssss", model_repo_rs,
+                         "ssssssssl", model_repo_rs,
                          createString("model"), model_name_rs,
                          createString("memory"), model_memory_rs,
-                         createString("parameters"), model_params_rs);
+                         createString("parameters"), model_params_rs,
+                         createString("eventid"), (sailbigint) 0);
 
   if (RedisModule_CallReplyType(rep) == REDISMODULE_REPLY_ERROR) {
     return RedisModule_ReplyWithCallReply(context(), rep);
@@ -67,9 +68,31 @@ int ReiNew::run() {
   return REDISMODULE_OK;
 }
 
-int ReiPredict::run() {
+int ReiAct::run() {
   RedisModuleString *model_repo_rs = args(1);
   RedisModuleString *model_example_rs = args(2);
+  RedisModuleString *model_default_rs = args(3);
+  RedisModuleString *model_eventid_rs = args(4);
+
+
+  // creates a new event id
+  if (model_eventid_rs == nullptr) {
+    char event_id[255];
+    sailbigint id = hincrby(model_repo_rs, createString("eventid"));
+
+    sprintf(event_id, "%lld", id);
+    model_eventid_rs = createString(event_id);
+  }
+
+  // get default action
+  sailbigint default_action = -1;
+
+  if (model_default_rs != nullptr) {
+    if (RedisModule_StringToLongLong(model_default_rs, &default_action)
+        != REDISMODULE_OK)
+      return RedisModule_ReplyWithError(context(),
+                                        "Cannot parse default action.");
+  }
 
   // get model metadatas
   RedisModuleCallReply *rep = RedisModule_Call(context(), "HMGET",
@@ -82,14 +105,26 @@ int ReiPredict::run() {
     return RedisModule_ReplyWithError(context(),
                                       "Cannot get model metadata.");
   }
+
   auto model_reply = RedisModule_CallReplyArrayElement(rep, 0);
-  auto model_rs = RedisModule_CreateStringFromCallReply(model_reply);
   auto example_reply = RedisModule_CallReplyArrayElement(rep, 1);
+
+  // checking is the replies are not null
+  if (RedisModule_CallReplyType(model_reply) == REDISMODULE_REPLY_NULL
+      || RedisModule_CallReplyType(example_reply) == REDISMODULE_REPLY_NULL)
+    return RedisModule_ReplyWithError(context(),
+                                      "Cannot get model metadata.");
+
+  auto model_rs = RedisModule_CreateStringFromCallReply(model_reply);
   auto example_rs = RedisModule_CreateStringFromCallReply(example_reply);
 
-  /////////////////////
-  // get the prediction
+  // Compute the next action
+  // get the existing model
   VwTypeObject *vwto = getVwType(model_rs);
+
+  if (vwto == nullptr)
+    return RedisModule_ReplyWithError(context(),
+                                      "Cannot get an existing model.");
 
   // we read example data
   size_t l1;
@@ -103,8 +138,8 @@ int ReiPredict::run() {
 
   // add example to the memory
 
-  return 0;
-}
+  RedisModule_ReplyWithLongLong(context(), 0);
+  return REDISMODULE_OK;
 }
 
-
+}

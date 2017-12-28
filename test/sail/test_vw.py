@@ -57,6 +57,11 @@ class SAILCoreTestCase(ModuleTestCase(module_path, redis_path)):
             with self.assertRaises(redis.ResponseError) as context:
                 r.execute_command('sail.vw.predict', 'm0', '')
 
+    def test_vw_fit_without_model_should_return_error(self):
+        with self.redis() as r:
+            with self.assertRaises(redis.ResponseError) as context:
+                r.execute_command('sail.vw.fit', 'm0', "example")
+
     def test_vw_prediction_with_save_should_match(self):
         self.assertTrue(self.server)
         self.assertTrue(self.client)

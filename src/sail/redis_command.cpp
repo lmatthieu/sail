@@ -32,7 +32,7 @@ int RedisCommand::exists(RedisModuleString *key) {
                                                "s", key);
 
   if (RedisModule_CallReplyType(rep) == REDISMODULE_REPLY_INTEGER) {
-    return (int)RedisModule_CallReplyInteger(rep);
+    return (int) RedisModule_CallReplyInteger(rep);
   }
   return -1;
 }
@@ -41,6 +41,19 @@ RedisModuleString *RedisCommand::createString(const char *ptr, size_t len) {
   if (len == 0)
     len = strlen(ptr);
   return RedisModule_CreateString(context(), ptr, len);
+}
+
+sailbigint RedisCommand::hincrby(RedisModuleString *key,
+                                 RedisModuleString *field,
+                                 sailbigint increment) {
+  auto rep = RedisModule_Call(context(), "HSET", "ssl",
+                              key, field, increment);
+
+  if (RedisModule_CallReplyType(rep) == REDISMODULE_REPLY_ERROR) {
+    return -1;
+  }
+
+  return RedisModule_CallReplyInteger(rep);
 }
 
 }

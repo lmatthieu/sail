@@ -47,6 +47,7 @@ int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   sail::register_command<sail::VwGetCommand>(ctx, "sail.vw.get");
   sail::register_command<sail::VwNewCommand>(ctx, "sail.vw.new");
   sail::register_command<sail::ReiNew>(ctx, "sail.rei.new");
+  sail::register_command<sail::ReiAct>(ctx, "sail.rei.act");
 
   return REDISMODULE_OK;
 }
