@@ -55,6 +55,8 @@ class ReiAct : public VwAccessor {
   ReiAct() : VwAccessor(3) {}
 
   int run() override;
+  void getEventId(const RedisModuleString *model_repo_rs,
+                  RedisModuleString *model_eventid_rs);
 };
 
 

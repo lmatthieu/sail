@@ -43,7 +43,7 @@ RedisModuleString *RedisCommand::createString(const char *ptr, size_t len) {
   return RedisModule_CreateString(context(), ptr, len);
 }
 
-sailbigint RedisCommand::hincrby(RedisModuleString *key,
+sailbigint RedisCommand::hincrby(const RedisModuleString *key,
                                  RedisModuleString *field,
                                  sailbigint increment) {
   auto rep = RedisModule_Call(context(), "HSET", "ssl",

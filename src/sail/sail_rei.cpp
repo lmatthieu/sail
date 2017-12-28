@@ -76,13 +76,7 @@ int ReiAct::run() {
 
 
   // creates a new event id
-  if (model_eventid_rs == nullptr) {
-    char event_id[255];
-    sailbigint id = hincrby(model_repo_rs, createString("eventid"));
-
-    sprintf(event_id, "%lld", id);
-    model_eventid_rs = createString(event_id);
-  }
+  getEventId(model_repo_rs, model_eventid_rs);
 
   // get default action
   sailbigint default_action = -1;
@@ -140,6 +134,17 @@ int ReiAct::run() {
 
   RedisModule_ReplyWithLongLong(context(), 0);
   return REDISMODULE_OK;
+}
+
+void ReiAct::getEventId(const RedisModuleString *model_repo_rs,
+                        RedisModuleString *model_eventid_rs) {
+  if (model_eventid_rs == nullptr) {
+    char event_id[255];
+    sailbigint id = hincrby(model_repo_rs, createString("eventid"));
+
+    sprintf(event_id, "%lld", id);
+    model_eventid_rs = createString(event_id);
+  }
 }
 
 }

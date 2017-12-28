@@ -1,0 +1,12 @@
+include_directories(${Protobuf_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src/codegen)
+
+set(PROTOBUF_IMPORT_DIRS ${CMAKE_SOURCE_DIR}/src/codegen)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS vowpal.proto)
+protobuf_generate_python(PROTO_PY vowpal.proto)
+SAIL_GENERATE_SERVICE_CPP(SRV_SRCS SRV_HDRS vowpal.proto)
+
+add_library(sailapi STATIC ${PROTO_SRCS} ${PROTO_HDRS} ${SRV_SRCS})
+
+target_link_libraries(sailapi ${Protobuf_LIBRARIES})
+add_dependencies(sailapi protobuf)
+

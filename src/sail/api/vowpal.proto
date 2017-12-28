@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option cc_enable_arenas = true;
+
+import "options.proto";
+
+package sail.vw;
+
+message VowpalMetadata {
+    string id = 1;
+    string parameters = 2;
+}
+
+message VowpalModel {
+    option (wrapper) = "VowpalModelImpl";
+    string id = 1;
+    VowpalMetadata metadata = 2;
+}
+
+service VowpalService {
+    rpc New (VowpalMetadata) returns (VowpalModel);
+}

@@ -74,7 +74,7 @@ class RedisCommand {
   /**
    * HINCRBY REDIS command wrapper
    */
-  sailbigint hincrby(RedisModuleString *key,
+  sailbigint hincrby(const RedisModuleString *key,
                      RedisModuleString *field, sailbigint increment = 1);
 
  private:
