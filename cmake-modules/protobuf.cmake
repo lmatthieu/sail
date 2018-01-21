@@ -3,26 +3,17 @@
 ##
 
 set(PNAME protobuf)
-ExternalProject_Add(
-        ${PNAME}
-        PREFIX ${PNAME}
-        INSTALL_DIR ${CMAKE_BINARY_DIR}
-        DOWNLOAD_COMMAND ${CMAKE_SOURCE_DIR}/cmake-modules/cmd.sh ${PNAME}_download
-        UPDATE_COMMAND git submodule foreach git pull origin master
-        UPDATE_DISCONNECTED 1
-        CONFIGURE_COMMAND CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR} PNAME=${PNAME} ${CMAKE_SOURCE_DIR}/cmake-modules/cmd.sh ${PNAME}_configure
-        BUILD_COMMAND make
-        INSTALL_COMMAND make install
-        BUILD_IN_SOURCE 1
-        EXCLUDE_FROM_ALL 1
-)
 
+option(protobuf_BUILD_SHARED_LIBS "" OFF)
+option(protobuf_BUILD_TESTS "" OFF)
+option(protobuf_BUILD_EXAMPLES "" OFF)
+add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/protobuf/cmake)
 
-SET(Protobuf_SRC_ROOT_FOLDER ${CMAKE_BINARY_DIR}/${PNAME}/src/${PNAME})
-SET(PROTOBUF_PROTOC_EXECUTABLE ${CMAKE_BINARY_DIR}/${PNAME}/bin/protoc)
-SET(Protobuf_LIBRARY ${CMAKE_BINARY_DIR}/${PNAME}/lib/libprotobuf.a)
-SET(Protobuf_PROTOC_LIBRARY ${CMAKE_BINARY_DIR}/${PNAME}/lib/libprotoc.a)
-SET(Protobuf_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${PNAME}/src/${PNAME}/src)
+set(Protobuf_SRC_ROOT_FOLDER ${PROJECT_SOURCE_DIR}/third_party/protobuf)
+set(PROTOBUF_PROTOC_EXECUTABLE ${PROJECT_BINARY_DIR}/third_party/protobuf/cmake/protoc)
+set(Protobuf_LIBRARY ${CMAKE_BINARY_DIR}/third_party/protobuf/cmake/libprotobufd.a)
+set(Protobuf_PROTOC_LIBRARY ${CMAKE_BINARY_DIR}/third_party/protobuf/cmake/libprotocd.a)
+set(PROTOBUF_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/third_party/protobuf/src)
 
 # Include the cmake default protobuf file
 include(FindProtobuf)
@@ -51,7 +42,7 @@ function(SAIL_GENERATE_SERVICE_CPP SRCS HDRS)
       ARGS  --plugin=protoc-gen-sail=${CMAKE_BINARY_DIR}/src/codegen/redis_codegen
             --sail_out=${CMAKE_CURRENT_BINARY_DIR}
             -I ${CMAKE_SOURCE_DIR}/src/codegen
-            -I ${CMAKE_BINARY_DIR}/protobuf/include
+            -I ${CMAKE_SOURCE_DIR}/third_party/protobuf/src
             -I ${CMAKE_CURRENT_SOURCE_DIR} ${ABS_FILE}
       DEPENDS ${ABS_FILE} ${PROTOBUF_PROTOC_EXECUTABLE}
       COMMENT "Running SAIL service compiler on ${FILE}"
