@@ -20,6 +20,9 @@ ExternalProject_Add(
 
 SET(Protobuf_SRC_ROOT_FOLDER ${CMAKE_BINARY_DIR}/${PNAME}/src/${PNAME})
 SET(PROTOBUF_PROTOC_EXECUTABLE ${CMAKE_BINARY_DIR}/${PNAME}/bin/protoc)
+SET(Protobuf_LIBRARY ${CMAKE_BINARY_DIR}/${PNAME}/lib/libprotobuf.a)
+SET(Protobuf_PROTOC_LIBRARY ${CMAKE_BINARY_DIR}/${PNAME}/lib/libprotoc.a)
+SET(Protobuf_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${PNAME}/src/${PNAME}/src)
 
 # Include the cmake default protobuf file
 include(FindProtobuf)
