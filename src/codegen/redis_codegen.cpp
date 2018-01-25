@@ -36,44 +36,30 @@ class MessageGenerator {
       : message_(message) {
     // Processing options
     const MessageOptions &opts = message->options();
+    string wrapper_name = opts.GetExtension(wrapper);
 
-    vars_["classname"] = message_->name();
-    for (int i = 0; i < opts.uninterpreted_option_size(); ++i) {
-      auto opt = opts.uninterpreted_option(i);
-
-      cerr << "Option " << opt.identifier_value() << endl;
-//      if (opt.has_string_value() && opt.name(0) == "wrapper") {
-//        vars_["classname"] = opt.string_value();
-//      } else {
-
-//      }
+    if (wrapper_name.size() == 0) {
+      vars_["classname"] = message_->name();
+      custom_wrapper_ = false;
+    } else {
+      vars_["classname"] = wrapper_name;
+      custom_wrapper_ = true;
     }
-
     vars_["name"] = message_->name();
     vars_["full_name"] = message_->full_name();
     vars_["FULL_NAME"] = ToUpper(message_->full_name());
   }
 
-  void Debug(io::Printer *printer) {
-    std::ofstream ofs;
-    ofs.open("/tmp/out.log", ios::app);
-    const MessageOptions &opts = message_->options();
+  void AddInclude(io::Printer *printer) {
+    if (custom_wrapper_) {
+      string inc_name = vars_["classname"];
 
-    vars_["classname"] = message_->name();
-    ofs << "//Message " << message_->name() << " "
-         << opts.uninterpreted_option_size()
-        << opts.DebugString()
-        << endl;
-    for (int i = 0; i < opts.uninterpreted_option_size(); ++i) {
-      auto opt = opts.uninterpreted_option(i);
-
-      ofs << "Option " << opt.identifier_value() << endl;
-//      if (opt.has_string_value() && opt.name(0) == "wrapper") {
-//        vars_["classname"] = opt.string_value();
-//      } else {
-
-//      }
+      LowerString(&inc_name);
+      printer->Print("#include \"$decl$.h\"\n", "decl", inc_name);
     }
+  }
+
+  void Debug(io::Printer *printer) {
   }
 
   void GenerateRdbLoad(io::Printer *printer) {
@@ -87,10 +73,18 @@ class MessageGenerator {
                        "size_t size = RedisModule_LoadUnsigned(rdb);\n"
                        "char *cbuf = RedisModule_LoadStringBuffer(rdb, &size);\n\n");
 
+
     // Parsing
     printer->Print(vars_,
-                   "if (obj->ParseFromString(cbuf)) {\n"
-                       "  return obj;\n"
+                   "if (obj->ParseFromString(cbuf)) {\n");
+
+    // Custom deserializer
+    if (custom_wrapper_)
+      printer->Print(vars_,
+                     "  obj->wrapperDeserialize();\n");
+
+    printer->Print(vars_,
+                   "  return obj;\n"
                        "} else {\n"
                        "  return NULL;\n"
                        "}\n");
@@ -104,8 +98,13 @@ class MessageGenerator {
                    "void $name$TypeRdbSave(RedisModuleIO *rdb, void *value) {\n");
     printer->Indent();
     printer->Print(vars_,
-                   "$classname$ *obj = reinterpret_cast<$classname$ *>(value);\n"
-                       "const std::string &buf = obj->SerializeAsString();\n\n"
+                   "$classname$ *obj = reinterpret_cast<$classname$ *>(value);\n");
+    // Custom serializer
+    if (custom_wrapper_)
+      printer->Print(vars_,
+                     "obj->wrapperSerialize();\n");
+    printer->Print(vars_,
+                   "const std::string &buf = obj->SerializeAsString();\n\n"
                        "RedisModule_SaveUnsigned(rdb, buf.size());\n"
                        "RedisModule_SaveStringBuffer(rdb, buf.data(), buf.size());\n");
     printer->Outdent();
@@ -117,8 +116,13 @@ class MessageGenerator {
                    "void $name$TypeAofRewrite(RedisModuleIO *aof, RedisModuleString *key, void *value) {\n");
     printer->Indent();
     printer->Print(vars_,
-                   "$classname$ *obj = reinterpret_cast<$classname$ *>(value);\n"
-                       "const std::string &buf = obj->SerializeAsString();\n\n"
+                   "$classname$ *obj = reinterpret_cast<$classname$ *>(value);\n");
+    // Custom serializer
+    if (custom_wrapper_)
+      printer->Print(vars_,
+                     "obj->wrapperSerialize();\n");
+    printer->Print(vars_,
+                   "const std::string &buf = obj->SerializeAsString();\n\n"
                        "sds obj_s = sdsempty();\n"
                        "sdscatlen(obj_s, buf.data(), buf.size());\n\n");
     printer->Print(vars_,
@@ -177,6 +181,7 @@ class MessageGenerator {
  private:
   const Descriptor *message_;
   map<string, string> vars_;
+  bool custom_wrapper_;
 };
 
 class ServiceGenerator {
@@ -276,6 +281,14 @@ class RedisCodeGenerator : public CodeGenerator {
           "#include \"sail/context/context.h\"\n"
       );
     }
+
+    for (int i = 0; i < file->message_type_count(); ++i) {
+      auto message = file->message_type(i);
+      MessageGenerator msg_gen(message);
+
+      msg_gen.AddInclude(&printer);
+    }
+
     // Redis include
     printer.Print("#include \"$dependency$\"\n", "dependency",
                   "redis_modules_sdk/rmutil/util.h");
