@@ -135,7 +135,7 @@ class MessageGenerator {
   void GenerateMessage(io::Printer *printer) {
     Debug(printer);
     printer->Print(vars_,
-                   "extern RedisModuleType *$name$Type;\n\n");
+                   "RedisModuleType *$name$Type = 0;\n\n");
     GenerateRdbLoad(printer);
     GenerateRdbSave(printer);
     GenerateAofRewrite(printer);
@@ -175,7 +175,59 @@ class MessageGenerator {
    * @param printer
    */
   void GenerateNew(io::Printer *printer) const {
+    printer->Print(vars_,
+                   "int $name$TypeNew(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {\n");
+    printer->Indent();
+    printer->Print(vars_,
+                   "auto key = reinterpret_cast<RedisModuleKey *>"
+                       "(RedisModule_OpenKey(ctx, argv[1], "
+                       "REDISMODULE_READ | REDISMODULE_WRITE));\n");
+    printer->Print(vars_,
+                   "int type = RedisModule_KeyType(key);\n"
+                       "if (type != REDISMODULE_KEYTYPE_EMPTY && "
+                       "RedisModule_ModuleTypeGetType(key) != $name$Type) {\n"
+                       "  return RedisModule_ReplyWithError(ctx, REDISMODULE_ERRORMSG_WRONGTYPE);\n"
+                       "}\n");
+    printer->Print(vars_, "$classname$ *obj = nullptr;\n");
+    printer->Print(vars_, "if (argc == 3) {\n");
+    printer->Indent();
 
+    // Declarations
+    printer->Print(vars_,
+                   "obj = new $classname$();\n"
+                       "size_t len;\n"
+                       "const char *cbuf = RedisModule_StringPtrLen(argv[2], &len);\n\n");
+
+    // Parsing
+    printer->Print(vars_,
+                   "if (obj->ParseFromString(cbuf)) {\n");
+
+    // Custom deserializer
+    if (custom_wrapper_)
+      printer->Print(vars_,
+                     "  obj->wrapperDeserialize();\n");
+
+    printer->Print(vars_,
+                   "} else {\n"
+                       "  delete obj;\n"
+                       "  obj = nullptr;\n"
+                       "}\n");
+
+    printer->Outdent();
+    printer->Print("}\n\n");
+
+    printer->Print(vars_, "if (type != REDISMODULE_KEYTYPE_EMPTY) {\n"
+        "  RedisModule_DeleteKey(key);\n"
+        "  key = reinterpret_cast<RedisModuleKey *>"
+        "(RedisModule_OpenKey(ctx, argv[1], "
+        "REDISMODULE_READ | REDISMODULE_WRITE));\n"
+        "}\n");
+    printer->Print(vars_,
+                   "RedisModule_ModuleTypeSetValue(key, $name$Type, obj);\n"
+                       "RedisModule_ReplyWithNull(ctx);"
+                       "return REDISMODULE_OK;\n");
+    printer->Outdent();
+    printer->Print("}\n\n");
   }
 
  private:
