@@ -16,6 +16,7 @@ wabbit models.
 This package uses the CMake tool for building. CMake download automatically the 
 dependencies:
 - Vowpal wabbit
+- Protocol buffers
 - Redis: used only for unit testing
 - RedisModulesSDK
 
