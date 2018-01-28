@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "sail/redismodule.h"
+#include "redismodule.h"
 
 int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc);
 

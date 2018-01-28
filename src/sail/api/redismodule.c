@@ -1,4 +1,4 @@
-#include "sail/redismodule.h"
+#include "redismodule.h"
 
 void *REDISMODULE_API_FUNC(RedisModule_Alloc)(size_t bytes);
 void *REDISMODULE_API_FUNC(RedisModule_Realloc)(void *ptr, size_t bytes);

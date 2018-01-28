@@ -1,7 +1,11 @@
-INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${PROTOBUF_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(PROTOBUF_IMPORT_DIRS ${CMAKE_SOURCE_DIR}/third_party/protobuf/src)
-PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS options.proto)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS options.proto)
 
-ADD_EXECUTABLE(redis_codegen redis_codegen.cpp ${PROTO_SRCS})
-TARGET_LINK_LIBRARIES(redis_codegen ${PROTOBUF_LIBRARIES} ${Protobuf_PROTOC_LIBRARIES})
+add_library(sailcodegen ${PROTO_SRCS} ${PROTO_HDRS})
+
+ADD_EXECUTABLE(redis_codegen redis_codegen.cpp)
+TARGET_LINK_LIBRARIES(redis_codegen
+        sailcodegen
+        ${PROTOBUF_LIBRARIES} ${Protobuf_PROTOC_LIBRARIES})
