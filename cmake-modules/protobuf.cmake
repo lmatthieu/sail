@@ -11,8 +11,8 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/protobuf/cmake)
 
 set(Protobuf_SRC_ROOT_FOLDER ${PROJECT_SOURCE_DIR}/third_party/protobuf)
 set(PROTOBUF_PROTOC_EXECUTABLE ${PROJECT_BINARY_DIR}/third_party/protobuf/cmake/protoc)
-set(Protobuf_LIBRARY ${CMAKE_BINARY_DIR}/third_party/protobuf/cmake/libprotobufd.a)
-set(Protobuf_PROTOC_LIBRARY ${CMAKE_BINARY_DIR}/third_party/protobuf/cmake/libprotocd.a)
+set(Protobuf_LIBRARY ${CMAKE_BINARY_DIR}/third_party/protobuf/cmake/libprotobufd${CMAKE_SHARED_LIBRARY_SUFFIX})
+set(Protobuf_PROTOC_LIBRARY ${CMAKE_BINARY_DIR}/third_party/protobuf/cmake/libprotocd${CMAKE_SHARED_LIBRARY_SUFFIX})
 set(PROTOBUF_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/third_party/protobuf/src)
 
 # Include the cmake default protobuf file

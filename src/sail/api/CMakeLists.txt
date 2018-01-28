@@ -8,7 +8,7 @@ protobuf_generate_python(PROTO_PY vowpal.proto)
 MESSAGE(STATUS "Protocol buffers files generated: ${PROTO_SRCS} ${PROTO_HDRS}")
 
 sail_generate_service_cpp(SRV_SRCS SRV_HDRS vowpal.proto)
-MESSAGE("Sail files generated: ${SRV_SRCS} ${SRV_HDRS}")
+MESSAGE(STATUS "Sail files generated: ${SRV_SRCS} ${SRV_HDRS}")
 
 add_library(sailapi SHARED
         ${SRV_SRCS} ${SRV_HDRS}
