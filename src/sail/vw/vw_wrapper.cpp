@@ -17,6 +17,7 @@
 */
 
 #include "sail/vw/vw_wrapper.h"
+#include "sail/api/vowpalmodelimpl.h"
 
 extern "C" {
 #include <redis_modules_sdk/rmutil/sds.h>
@@ -45,7 +46,7 @@ void *vwTypeRdbLoad(RedisModuleIO *rdb, int encver) {
     return NULL;
   }
   struct VwTypeObject *vwto = createVwTypeObject();
-  VwMemoryBuffer buf;
+  sail::vw::VwMemoryBuffer buf;
 
   size_t size = RedisModule_LoadUnsigned(rdb);
   char *cbuf = RedisModule_LoadStringBuffer(rdb, &size);
@@ -62,7 +63,7 @@ void *vwTypeRdbLoad(RedisModuleIO *rdb, int encver) {
 
 void vwTypeRdbSave(RedisModuleIO *rdb, void *value) {
   struct VwTypeObject *vwto = (struct VwTypeObject *) value;
-  VwMemoryBuffer buf;
+  sail::vw::VwMemoryBuffer buf;
 
   VW::save_predictor(*(vwto->vw_), buf);
 
@@ -75,7 +76,7 @@ void vwTypeRdbSave(RedisModuleIO *rdb, void *value) {
 }
 
 void vwTypeAofRewrite(RedisModuleIO *aof, RedisModuleString *key, void *value) {
-  VwMemoryBuffer buf;
+  sail::vw::VwMemoryBuffer buf;
   auto vwto = reinterpret_cast<VwTypeObject *>(value);
 
   VW::save_predictor(*(vwto->vw_), buf);
@@ -101,26 +102,6 @@ void vwTypeFree(void *value) {
   if (vo->vw_ != NULL)
     VW::finish(*(vo->vw_));
   RedisModule_Free(vo);
-}
-
-VwMemoryBuffer::VwMemoryBuffer() {
-  read_offset_ = 0;
-  files.push_back(-1);
-}
-
-ssize_t VwMemoryBuffer::write_file(int fp, const void *data, size_t size) {
-  auto buf = reinterpret_cast<const char *>(data);
-  data_.insert(data_.end(), &buf[0], &buf[size]);
-  return size;
-}
-
-ssize_t VwMemoryBuffer::read_file(int fp, void *data, size_t size) {
-  size = min(size, data_.size() - read_offset_);
-  std::copy(data_.data() + read_offset_,
-            data_.data() + read_offset_ + size,
-            reinterpret_cast<char *>(data));
-  read_offset_ += size;
-  return size;
 }
 
 int VwPredictCommand::run() {
@@ -182,7 +163,7 @@ int VwInitCommand::run() {
   size_t l2;
   const char *c2 = RedisModule_StringPtrLen(args(3), &l2);
 
-  VwMemoryBuffer buf;
+  sail::vw::VwMemoryBuffer buf;
   buf.write_file(-1, c2, l2);
 
   auto vwto = createVwTypeObject();

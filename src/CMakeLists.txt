@@ -1,4 +1,7 @@
-include_directories(${CMAKE_BINARY_DIR}/src)
+include_directories(${Protobuf_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src/codegen
+        ${CMAKE_BINARY_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+
 
 add_subdirectory(sail/api)
 add_subdirectory(codegen)

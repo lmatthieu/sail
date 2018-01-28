@@ -19,11 +19,40 @@
 #ifndef SAIL_VOWPALMODELIMPL_H
 #define SAIL_VOWPALMODELIMPL_H
 
-#include "wrapper.h"
-#include "vowpal.pb.h"
+#include "sail/api/wrapper.h"
+#include "sail/api/vowpal.pb.h"
+#include "vowpalwabbit/vw.h"
 
 namespace sail {
 namespace vw {
+
+/**
+ * This class is used to serialize / deserialize Vowpal wabbit mail object.
+ *
+ * The code behavior is inspired from the vowpal class memory_io_buf
+ * available in the vwdll.cpp file.
+ */
+class VwMemoryBuffer : public io_buf {
+ public:
+  VwMemoryBuffer();
+
+  ssize_t write_file(int fp, const void *data, size_t size) override;
+
+  ssize_t read_file(int fp, void *data, size_t size) override;
+
+  inline char *data() {
+    return data_.data();
+  }
+
+  inline size_t size() const {
+    return data_.size();
+  }
+
+ private:
+  std::vector<char> data_;
+  size_t read_offset_;
+};
+
 
 class VowpalModelImpl : public VowpalModel, public Wrapper {
  public:

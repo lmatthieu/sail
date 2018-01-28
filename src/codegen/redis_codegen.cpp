@@ -55,7 +55,7 @@ class MessageGenerator {
       string inc_name = vars_["classname"];
 
       LowerString(&inc_name);
-      printer->Print("#include \"$decl$.h\"\n", "decl", inc_name);
+      printer->Print("#include \"sail/api/$decl$.h\"\n", "decl", inc_name);
     }
   }
 
