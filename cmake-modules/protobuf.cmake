@@ -4,7 +4,7 @@
 
 set(PNAME protobuf)
 
-option(protobuf_BUILD_SHARED_LIBS "" OFF)
+option(protobuf_BUILD_SHARED_LIBS "" ON)
 option(protobuf_BUILD_TESTS "" OFF)
 option(protobuf_BUILD_EXAMPLES "" OFF)
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/protobuf/cmake)
