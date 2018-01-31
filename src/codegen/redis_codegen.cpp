@@ -135,13 +135,14 @@ class MessageGenerator {
   void GenerateMessage(io::Printer *printer) {
     Debug(printer);
     printer->Print(vars_,
-                   "RedisModuleType *$name$Type = 0;\n\n");
+                   "static RedisModuleType *$name$Type = 0;\n\n");
     GenerateRdbLoad(printer);
     GenerateRdbSave(printer);
     GenerateAofRewrite(printer);
     GenerateMemUsage(printer);
     GenerateFree(printer);
     GenerateNew(printer);
+    GenerateAPIDeclaration(printer);
   }
 
   void GenerateMemUsage(io::Printer *printer) const {
@@ -226,6 +227,38 @@ class MessageGenerator {
                    "RedisModule_ModuleTypeSetValue(key, $name$Type, obj);\n"
                        "RedisModule_ReplyWithNull(ctx);"
                        "return REDISMODULE_OK;\n");
+    printer->Outdent();
+    printer->Print("}\n\n");
+  }
+
+  /**
+   * Generates a function for loading the REDIS module type
+   * @param printer protobuf printer object
+   */
+  void GenerateAPIDeclaration(io::Printer *printer) const {
+    printer->Print(vars_,
+                   "int load$name$Type(RedisModuleCtx *ctx) {\n");
+    printer->Indent();
+    printer->Print(vars_,
+                   "RedisModuleTypeMethods tm;\n\n"
+                       "tm.version = REDISMODULE_TYPE_METHOD_VERSION;\n"
+                       "tm.rdb_load = $name$TypeRdbLoad;\n"
+                       "tm.rdb_save = $name$TypeRdbSave;\n"
+                       "tm.aof_rewrite = $name$TypeAofRewrite;\n"
+                       "tm.mem_usage = $name$TypeMemUsage;\n"
+                       "tm.free = $name$TypeFree;\n\n");
+
+    printer->Print(vars_,
+                   "$name$Type = RedisModule_CreateDataType(ctx, \"$name$Type_Tp\", 0, &tm);\n"
+                       "if ($name$Type == NULL) {\n"
+                       "  std::cerr << \"Cannot initialize type $name$\" << std::endl;\n"
+                       "  return REDISMODULE_ERR;\n"
+                       "}\n\n");
+
+    printer->Print(vars_,
+                   "RMUtil_RegisterWriteCmd(ctx, \"$FULL_NAME$.NEW\", &$name$TypeNew);\n\n");
+
+    printer->Print("return REDISMODULE_OK;\n");
     printer->Outdent();
     printer->Print("}\n\n");
   }

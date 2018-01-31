@@ -19,6 +19,12 @@
 #include "sail/vw/vw_wrapper.h"
 #include "sail/sail_rei.h"
 
+namespace sail {
+namespace vw {
+int loadVowpalModelType(RedisModuleCtx *ctx);
+}
+}
+
 int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   REDISMODULE_NOT_USED(argv);
   REDISMODULE_NOT_USED(argc);
@@ -48,6 +54,9 @@ int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   sail::register_command<sail::VwNewCommand>(ctx, "sail.vw.new");
   sail::register_command<sail::ReiNew>(ctx, "sail.rei.new");
   sail::register_command<sail::ReiAct>(ctx, "sail.rei.act");
+
+  //if (sail::vw::loadVowpalModelType(ctx) != REDISMODULE_OK)
+  //  return REDISMODULE_ERR;
 
   return REDISMODULE_OK;
 }
