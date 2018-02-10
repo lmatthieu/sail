@@ -21,7 +21,7 @@
 
 namespace sail {
 namespace vw {
-int loadVowpalModelType(RedisModuleCtx *ctx);
+int loadVowpalModelType(RedisModuleCtx *ctx, const char *type_name);
 }
 }
 
@@ -33,6 +33,10 @@ int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
       REDISMODULE_ERR) {
     return REDISMODULE_ERR;
   }
+
+  if (sail::vw::loadVowpalModelType(ctx, "vwmodel__") != REDISMODULE_OK)
+    return REDISMODULE_ERR;
+
   RedisModuleTypeMethods tm;
 
   tm.version = REDISMODULE_TYPE_METHOD_VERSION;
@@ -47,6 +51,7 @@ int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   if (sail::VwType == NULL)
     return REDISMODULE_ERR;
 
+
   sail::register_command<sail::VwPredictCommand>(ctx, "sail.vw.predict");
   sail::register_command<sail::VwFitCommand>(ctx, "sail.vw.fit");
   sail::register_command<sail::VwInitCommand>(ctx, "sail.vw.init");
@@ -55,8 +60,6 @@ int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   sail::register_command<sail::ReiNew>(ctx, "sail.rei.new");
   sail::register_command<sail::ReiAct>(ctx, "sail.rei.act");
 
-  //if (sail::vw::loadVowpalModelType(ctx) != REDISMODULE_OK)
-  //  return REDISMODULE_ERR;
 
   return REDISMODULE_OK;
 }

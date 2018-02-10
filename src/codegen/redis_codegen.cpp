@@ -142,6 +142,7 @@ class MessageGenerator {
     GenerateMemUsage(printer);
     GenerateFree(printer);
     GenerateNew(printer);
+    GeneratePrint(printer);
     GenerateAPIDeclaration(printer);
   }
 
@@ -168,10 +169,65 @@ class MessageGenerator {
   }
 
   /**
+   * Print a message
+   * @param printer
+   */
+  void GeneratePrint(io::Printer *printer) const {
+    printer->Print(vars_,
+                   "int $name$TypePrint(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {\n");
+    printer->Indent();
+    printer->Print(vars_,
+                   "if (argc < 2) {\n"
+                       "  return RedisModule_WrongArity(ctx);\n"
+                       "}\n");
+    printer->Print(vars_,
+                   "auto key = reinterpret_cast<RedisModuleKey *>"
+                       "(RedisModule_OpenKey(ctx, argv[1], "
+                       "REDISMODULE_READ));\n");
+    printer->Print(vars_,
+                   "int type = RedisModule_KeyType(key);\n"
+                       "if (type == REDISMODULE_KEYTYPE_EMPTY || "
+                       "RedisModule_ModuleTypeGetType(key) != $name$Type) {\n"
+                       "  return RedisModule_ReplyWithError(ctx, REDISMODULE_ERRORMSG_WRONGTYPE);\n"
+                       "}\n");
+    printer->Print(vars_,
+                   "$classname$ *obj = reinterpret_cast<$classname$ *>(RedisModule_ModuleTypeGetValue(key));\n");
+    printer->Print(vars_, "std::string buf;\n"
+        "size_t len = 0;\n"
+        "const char *option = nullptr;\n");
+    printer->Print(vars_, "if (argc == 3) {\n"
+        "  option = RedisModule_StringPtrLen(argv[2], &len);\n"
+        "}\n");
+
+    // Testing args
+    printer->Print(vars_,
+                   "if (argc == 2 || (len > 0 && option[0] == 'P')) {\n"
+                       "  buf = obj->ShortDebugString();\n"
+                       "} else if (argc == 3 && len > 0 && option[0] == 'J') {");
+    printer->Indent();
+    printer->Print(vars_,
+                   "google::protobuf::util::JsonPrintOptions options;\n"
+                       "options.add_whitespace = true;\n"
+                       "options.always_print_primitive_fields = true;\n"
+                       "options.preserve_proto_field_names = true;\n");
+    printer->Print(vars_,
+                   "google::protobuf::util::MessageToJsonString(*obj, &buf, options);\n");
+    printer->Outdent();
+    printer->Print(vars_, "}\n");
+    printer->Print(vars_,
+                   "RedisModule_ReplyWithStringBuffer(ctx, buf.data(), buf.size());\n");
+    printer->Print(vars_, "return REDISMODULE_OK;\n");
+
+    printer->Outdent();
+    printer->Print("}\n\n");
+  }
+
+  /**
    * Creates an object allocation function
    * - From proto binary format (default)
-   * - From proto text format (last arg is TEXT)
-   * - From proto json format (last arg is JSON)
+   * - From proto text format (last arg is T for "TEXT")
+   * - From proto json format (last arg is J for "JSON")
+   * - Empty (last arg is E "EMPTY")
    *
    * @param printer
    */
@@ -189,7 +245,8 @@ class MessageGenerator {
                        "RedisModule_ModuleTypeGetType(key) != $name$Type) {\n"
                        "  return RedisModule_ReplyWithError(ctx, REDISMODULE_ERRORMSG_WRONGTYPE);\n"
                        "}\n");
-    printer->Print(vars_, "$classname$ *obj = nullptr;\n");
+    printer->Print(vars_, "$classname$ *obj = nullptr;\n\n");
+
     printer->Print(vars_, "if (argc == 3) {\n");
     printer->Indent();
 
@@ -215,6 +272,13 @@ class MessageGenerator {
                        "}\n");
 
     printer->Outdent();
+    printer->Print("} else if (argc == 4) {\n");
+    printer->Indent();
+    printer->Print(vars_,
+                   "obj = new $classname$();\n"
+                       "size_t len;\n"
+                       "const char *cbuf = RedisModule_StringPtrLen(argv[3], &len);\n\n");
+    printer->Outdent();
     printer->Print("}\n\n");
 
     printer->Print(vars_, "if (type != REDISMODULE_KEYTYPE_EMPTY) {\n"
@@ -225,7 +289,7 @@ class MessageGenerator {
         "}\n");
     printer->Print(vars_,
                    "RedisModule_ModuleTypeSetValue(key, $name$Type, obj);\n"
-                       "RedisModule_ReplyWithNull(ctx);"
+                       "RedisModule_ReplyWithNull(ctx);\n"
                        "return REDISMODULE_OK;\n");
     printer->Outdent();
     printer->Print("}\n\n");
@@ -237,7 +301,7 @@ class MessageGenerator {
    */
   void GenerateAPIDeclaration(io::Printer *printer) const {
     printer->Print(vars_,
-                   "int load$name$Type(RedisModuleCtx *ctx) {\n");
+                   "int load$name$Type(RedisModuleCtx *ctx, const char *type_name) {\n");
     printer->Indent();
     printer->Print(vars_,
                    "RedisModuleTypeMethods tm;\n\n"
@@ -249,7 +313,7 @@ class MessageGenerator {
                        "tm.free = $name$TypeFree;\n\n");
 
     printer->Print(vars_,
-                   "$name$Type = RedisModule_CreateDataType(ctx, \"$name$Type_Tp\", 0, &tm);\n"
+                   "$name$Type = RedisModule_CreateDataType(ctx, type_name, 0, &tm);\n"
                        "if ($name$Type == NULL) {\n"
                        "  std::cerr << \"Cannot initialize type $name$\" << std::endl;\n"
                        "  return REDISMODULE_ERR;\n"
@@ -257,6 +321,8 @@ class MessageGenerator {
 
     printer->Print(vars_,
                    "RMUtil_RegisterWriteCmd(ctx, \"$FULL_NAME$.NEW\", &$name$TypeNew);\n\n");
+    printer->Print(vars_,
+                   "RMUtil_RegisterWriteCmd(ctx, \"$FULL_NAME$.PRINT\", &$name$TypePrint);\n\n");
 
     printer->Print("return REDISMODULE_OK;\n");
     printer->Outdent();
@@ -331,7 +397,9 @@ class RedisCodeGenerator : public CodeGenerator {
 
     // Any include file and string utils
     printer.Print("#include <google/protobuf/any.h>\n"
-                      "#include <google/protobuf/stubs/strutil.h>\n");
+                      "#include <google/protobuf/stubs/strutil.h>\n"
+                      "#include <google/protobuf/text_format.h>\n"
+                      "#include <google/protobuf/util/json_util.h>\n");
 
     // generates the include files
     for (int i = 0; i < file->public_dependency_count(); ++i) {
