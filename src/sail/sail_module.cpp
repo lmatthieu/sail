@@ -22,6 +22,7 @@
 namespace sail {
 namespace vw {
 int loadVowpalModelType(RedisModuleCtx *ctx, const char *type_name);
+int loadVowpalMetadataType(RedisModuleCtx *ctx, const char *type_name);
 }
 }
 
@@ -35,6 +36,9 @@ int loadSail(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   }
 
   if (sail::vw::loadVowpalModelType(ctx, "vwmodel__") != REDISMODULE_OK)
+    return REDISMODULE_ERR;
+
+  if (sail::vw::loadVowpalMetadataType(ctx, "vwmeta___") != REDISMODULE_OK)
     return REDISMODULE_ERR;
 
   RedisModuleTypeMethods tm;
