@@ -19,6 +19,8 @@
 #ifndef SAIL_WRAPPER_H
 #define SAIL_WRAPPER_H
 
+#define SAIL_ERROR_EMPTYKEY_OR_WRONGTYPE "Empty key or operation against a key holding the wrong kind of value"
+
 namespace sail {
 
 /**

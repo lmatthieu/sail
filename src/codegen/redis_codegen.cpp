@@ -185,13 +185,17 @@ class MessageGenerator {
                        "(RedisModule_OpenKey(ctx, argv[1], "
                        "REDISMODULE_READ));\n");
     printer->Print(vars_,
-                   "int type = RedisModule_KeyType(key);\n"
+                   "int type = RedisModule_KeyType(key);\n\n"
                        "if (type == REDISMODULE_KEYTYPE_EMPTY || "
                        "RedisModule_ModuleTypeGetType(key) != $name$Type) {\n"
-                       "  return RedisModule_ReplyWithError(ctx, REDISMODULE_ERRORMSG_WRONGTYPE);\n"
-                       "}\n");
+                       "  return RedisModule_ReplyWithError(ctx, SAIL_ERROR_EMPTYKEY_OR_WRONGTYPE);\n"
+                       "}\n\n");
     printer->Print(vars_,
-                   "$classname$ *obj = reinterpret_cast<$classname$ *>(RedisModule_ModuleTypeGetValue(key));\n");
+                   "$classname$ *obj = reinterpret_cast<$classname$ *>(RedisModule_ModuleTypeGetValue(key));\n\n");
+    printer->Print(vars_,
+                   "if (obj == nullptr) {\n"
+                       "  return RedisModule_ReplyWithError(ctx, \"Cannot get value from the specified key\");\n"
+                       "}\n");
     printer->Print(vars_, "std::string buf;\n"
         "size_t len = 0;\n"
         "const char *option = nullptr;\n");
@@ -236,6 +240,10 @@ class MessageGenerator {
                    "int $name$TypeNew(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {\n");
     printer->Indent();
     printer->Print(vars_,
+                   "if (argc < 3) {\n"
+                       "  return RedisModule_WrongArity(ctx);\n"
+                       "}\n");
+    printer->Print(vars_,
                    "auto key = reinterpret_cast<RedisModuleKey *>"
                        "(RedisModule_OpenKey(ctx, argv[1], "
                        "REDISMODULE_READ | REDISMODULE_WRITE));\n");
@@ -277,9 +285,23 @@ class MessageGenerator {
     printer->Print(vars_,
                    "obj = new $classname$();\n"
                        "size_t len;\n"
-                       "const char *cbuf = RedisModule_StringPtrLen(argv[3], &len);\n\n");
+                       "const char *option = RedisModule_StringPtrLen(argv[3], &len);\n\n");
+
+    printer->Print(vars_, "if (option[0] == 'T') {\n"
+        "} else if (option[0] == 'J') {\n"
+        "} else if (option[0] == 'E') {\n"
+        "  obj = new $classname$();\n"
+        "} else {\n"
+        "  return RedisModule_ReplyWithError(ctx, \"Invalid option value\");\n"
+        "}\n\n");
+
     printer->Outdent();
     printer->Print("}\n\n");
+
+    // Test if the object is allocated
+    printer->Print(vars_, "if (obj == nullptr) {\n"
+        "  return RedisModule_ReplyWithError(ctx, \"The $name$ object is not allocated\");\n"
+        "}\n\n");
 
     printer->Print(vars_, "if (type != REDISMODULE_KEYTYPE_EMPTY) {\n"
         "  RedisModule_DeleteKey(key);\n"
