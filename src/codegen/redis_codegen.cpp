@@ -414,8 +414,15 @@ class RedisCodeGenerator : public CodeGenerator {
     cpp::FileGenerator file_generator(file, file_options);
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
         generator_context->Open(base_name + "_service.cpp"));
+    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output_header(
+        generator_context->Open(base_name + "_service.hpp"));
 
     io::Printer printer(output.get(), '$');
+    io::Printer printer_header(output_header.get(), '$');
+
+    // Add defines
+    printer_header.Print("#ifndef $name$_hpp__\n#define $name$_hpp__\n",
+                         "name", base_name);
 
     // Any include file and string utils
     printer.Print("#include <google/protobuf/any.h>\n"
@@ -455,6 +462,13 @@ class RedisCodeGenerator : public CodeGenerator {
       printer.Print(
           "#include \"sail/context/context.h\"\n"
       );
+
+      printer_header.Print(
+          "#include \"sail/api/$dependency$\"\n",
+          "dependency", include_file);
+      printer_header.Print(
+          "#include \"sail/context/context.h\"\n"
+      );
     }
 
     for (int i = 0; i < file->message_type_count(); ++i) {
@@ -481,13 +495,19 @@ class RedisCodeGenerator : public CodeGenerator {
       message_gen.GenerateMessage(&printer);
     }
 
-    // Service code generation
-    for (int i = 0; i < file->service_count(); ++i) {
-      auto service = file->service(i);
-      ServiceGenerator service_gen(service);
+    {
+      cpp::NamespaceOpener ns_header(cpp::Namespace(file), &printer_header);
 
-      service_gen.GenerateService(&printer);
+      // Service code generation
+      for (int i = 0; i < file->service_count(); ++i) {
+        auto service = file->service(i);
+        ServiceGenerator service_gen(service);
+
+        service_gen.GenerateService(&printer_header);
+      }
     }
+
+    printer_header.Print("#endif\n");
 
     return true;
   }
