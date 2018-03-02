@@ -19,10 +19,54 @@
 #ifndef SAIL_SAILCONTEXT_H
 #define SAIL_SAILCONTEXT_H
 
-namespace sail {
-class Context {
+#include <string>
+#include "redismodule.h"
 
+namespace sail {
+
+class RedisContextPolicy {
+ public:
+  RedisContextPolicy(RedisModuleCtx *ctx) : ctx_(ctx) {
+  }
+
+  RedisModuleKey *openKey(RedisModuleString *key, int mode = REDISMODULE_READ
+      | REDISMODULE_WRITE) {
+    return reinterpret_cast<RedisModuleKey *>(RedisModule_OpenKey(ctx_,
+                                                                  key, mode));
+  }
+
+  template<class T>
+  T *getValue(const std::string &key) {
+    RedisModuleString
+        *rstr = RedisModule_CreateString(ctx_, key.data(), key.length());
+    RedisModuleKey *rkey = openKey(rstr);
+    int type = RedisModule_KeyType(rkey);
+
+    if (type == REDISMODULE_KEYTYPE_EMPTY) {
+      return nullptr;
+    }
+
+    T *obj = reinterpret_cast<T *>(
+        RedisModule_ModuleTypeGetValue(rkey));
+
+    return obj;
+  }
+
+ private:
+  RedisModuleCtx *ctx_;
 };
+
+template<class ContextPolicy>
+class Context : public ContextPolicy {
+ public:
+  template<class T>
+  T *getValue(const std::string &key) {
+    return ContextPolicy::template getValue<T>(key);
+  }
+};
+
+typedef Context<RedisContextPolicy> RedisContext;
+
 }
 
 #endif //SAIL_SAILCONTEXT_H

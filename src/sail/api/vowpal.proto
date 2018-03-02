@@ -3,6 +3,7 @@ syntax = "proto3";
 option cc_enable_arenas = true;
 
 import "options.proto";
+import "google/protobuf/any.proto";
 
 package sail.vw;
 
@@ -11,12 +12,25 @@ message VowpalMetadata {
     string parameters = 2;
 }
 
+message VowpalModelRequest {
+    string model_id = 1;
+    string example = 2;
+}
+
+message VowpalPrediction {
+    double prediction = 1;
+}
+
 message VowpalModel {
     option (wrapper) = "VowpalModelImpl";
     string id = 1;
     VowpalMetadata metadata = 2;
+    bytes model = 3;
 }
 
 service VowpalService {
     rpc New (VowpalMetadata) returns (VowpalModel);
+    rpc Fit (VowpalModelRequest) returns (VowpalPrediction);
+    rpc Predict(VowpalModelRequest) returns (VowpalPrediction);
 }
+

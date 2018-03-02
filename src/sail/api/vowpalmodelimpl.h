@@ -53,16 +53,33 @@ class VwMemoryBuffer : public io_buf {
   size_t read_offset_;
 };
 
-
 class VowpalModelImpl : public VowpalModel, public Wrapper {
  public:
   int wrapperSerialize() override {
-    return Wrapper::wrapperSerialize();
+    VwMemoryBuffer buf;
+
+    VW::save_predictor(*vw_, buf);
+    set_model(buf.data(), buf.size());
+
+    return 0;
   }
 
   int wrapperDeserialize() override {
-    return Wrapper::wrapperDeserialize();
+    auto model = this->model();
+    VwMemoryBuffer buf;
+
+    buf.write_file(-1, model.data(), model.length());
+    vw_ = VW::initialize("", &buf);
+
+    return 0;
   }
+
+  struct vw *getVw() {
+    return vw_;
+  }
+
+ private:
+  struct vw *vw_;
 };
 
 }

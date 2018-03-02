@@ -372,7 +372,7 @@ class ServiceGenerator {
                    "protected:\n"
                        "inline $name$() {};\n"
                        "public:\n"
-                       "virtual ~$name$();\n");
+                       "virtual ~$name$() {};\n");
     GenerateMethods(printer);
 
     printer->Print(vars_, "\nprivate:\n"
@@ -390,7 +390,7 @@ class ServiceGenerator {
       sub_vars["output_type"] = cpp::ClassName(method->output_type(), true);
 
       printer->Print(sub_vars,
-                     "virtual void $name$(sail::Context* context,\n"
+                     "virtual void $name$(sail::RedisContext* context,\n"
                          "         const $input_type$* request,\n"
                          "         $output_type$* response) {}\n");
     }
@@ -415,7 +415,7 @@ class RedisCodeGenerator : public CodeGenerator {
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
         generator_context->Open(base_name + "_service.cpp"));
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output_header(
-        generator_context->Open(base_name + "_service.hpp"));
+        generator_context->Open(base_name + "_service.h"));
 
     io::Printer printer(output.get(), '$');
     io::Printer printer_header(output_header.get(), '$');

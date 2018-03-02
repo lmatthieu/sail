@@ -14,7 +14,7 @@ add_library(sailapi SHARED
         ${SRV_SRCS} ${SRV_HDRS}
         ${PROTO_SRCS} ${PROTO_HDRS}
         vowpalmodelimpl.h wrapper.h vowpalmodelimpl.cpp
-        redismodule.c)
+        redismodule.c vowpal_service_impl.h vowpal_service_impl.cpp)
 
 target_link_libraries(sailapi
         sailcodegen
