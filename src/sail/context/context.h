@@ -26,7 +26,7 @@ namespace sail {
 
 class RedisContextPolicy {
  public:
-  RedisContextPolicy(RedisModuleCtx *ctx) : ctx_(ctx) {
+  explicit RedisContextPolicy(RedisModuleCtx *ctx) : ctx_(ctx) {
   }
 
   RedisModuleKey *openKey(RedisModuleString *key, int mode = REDISMODULE_READ
@@ -59,6 +59,8 @@ class RedisContextPolicy {
 template<class ContextPolicy>
 class Context : public ContextPolicy {
  public:
+  using ContextPolicy::ContextPolicy;
+
   template<class T>
   T *getValue(const std::string &key) {
     return ContextPolicy::template getValue<T>(key);

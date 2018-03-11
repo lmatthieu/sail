@@ -8,3 +8,7 @@ extend google.protobuf.MessageOptions {
     string wrapper = 50000;
 }
 
+extend google.protobuf.ServiceOptions {
+    string simpl = 50001;
+}
+

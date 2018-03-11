@@ -18,7 +18,7 @@
 
 #include <vowpalwabbit/example.h>
 #include <vowpalwabbit/vw.h>
-#include "sail/api/vowpal_service_impl.h"
+#include "sail/api/vowpalserviceimpl.h"
 #include "vowpalmodelimpl.h"
 
 namespace sail {
@@ -28,7 +28,7 @@ VowpalServiceImpl::~VowpalServiceImpl() {
 
 }
 
-void VowpalServiceImpl::Fit(sail::RedisContext *context,
+int VowpalServiceImpl::Fit(sail::RedisContext *context,
                             const ::sail::vw::VowpalModelRequest *request,
                             ::sail::vw::VowpalPrediction *response) {
   auto model = context->getValue<VowpalModelImpl>(request->model_id());
@@ -40,9 +40,11 @@ void VowpalServiceImpl::Fit(sail::RedisContext *context,
 
   response->set_prediction(vwex->pred.scalar);
   VW::finish_example(*vw, vwex);
+
+  return 0;
 }
 
-void VowpalServiceImpl::Predict(sail::RedisContext *context,
+int VowpalServiceImpl::Predict(sail::RedisContext *context,
                                 const ::sail::vw::VowpalModelRequest *request,
                                 ::sail::vw::VowpalPrediction *response) {
   auto model = context->getValue<VowpalModelImpl>(request->model_id());
@@ -54,6 +56,8 @@ void VowpalServiceImpl::Predict(sail::RedisContext *context,
 
   response->set_prediction(vwex->partial_prediction);
   VW::finish_example(*vw, vwex);
+
+  return 0;
 }
 
 }

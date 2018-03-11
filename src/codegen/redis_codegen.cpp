@@ -361,8 +361,25 @@ class ServiceGenerator {
  public:
   explicit ServiceGenerator(const ServiceDescriptor *service)
       : service_(service) {
+    // Processing options
+    const ServiceOptions &opts = service->options();
+    string wrapper_name = opts.GetExtension(simpl);
+
+    if (wrapper_name.size() == 0) {
+      vars_["classname"] = service_->name() + "Impl";
+    } else {
+      vars_["classname"] = wrapper_name;
+    }
     vars_["name"] = service_->name();
     vars_["full_name"] = service_->full_name();
+
+    string inc_name = vars_["classname"];
+    LowerString(&inc_name);
+    vars_["include"] = inc_name;
+  }
+
+  void AddInclude(io::Printer *printer) {
+    printer->Print(vars_, "#include \"sail/api/$include$.h\"\n");
   }
 
   void GenerateService(io::Printer *printer) {
@@ -390,10 +407,99 @@ class ServiceGenerator {
       sub_vars["output_type"] = cpp::ClassName(method->output_type(), true);
 
       printer->Print(sub_vars,
-                     "virtual void $name$(sail::RedisContext* context,\n"
+                     "virtual int $name$(sail::RedisContext* context,\n"
                          "         const $input_type$* request,\n"
-                         "         $output_type$* response) {}\n");
+                         "         $output_type$* response) = 0;\n");
     }
+  }
+
+  void GenerateRedisFunctions(io::Printer *printer) {
+    for (int i = 0; i < service_->method_count(); i++) {
+      const MethodDescriptor *method = service_->method(i);
+      std::map<string, string> sub_vars;
+      bool custom_wrapper = false;
+      sub_vars["service_name"] = vars_["classname"];
+      sub_vars["name"] = method->name();
+      sub_vars["input_type"] = cpp::ClassName(method->input_type(), true);
+      sub_vars["output_type"] = cpp::ClassName(method->output_type(), true);
+
+      const MessageOptions &opts = method->input_type()->options();
+      string wrapper_name = opts.GetExtension(wrapper);
+
+      if (wrapper_name.size() == 0) {
+        sub_vars["classname"] = method->input_type()->name();
+        custom_wrapper = false;
+      } else {
+        sub_vars["classname"] = wrapper_name;
+        custom_wrapper = true;
+      }
+
+      printer->Print(sub_vars,
+                     "int $service_name$$name$("
+                         "RedisModuleCtx *ctx, RedisModuleString **argv, "
+                         "int argc) {\n");
+      printer->Indent();
+      printer->Print(sub_vars,
+                     "if (argc < 2) {\n"
+                         "  return RedisModule_WrongArity(ctx);\n"
+                         "}\n");
+
+      printer->Print(sub_vars, "google::protobuf::Arena arena;\n"
+          "$classname$ *obj = google::protobuf::Arena::"
+          "CreateMessage<$classname$>(&arena);\n"
+          "$output_type$ *out_obj = google::protobuf::Arena::"
+          "CreateMessage<$output_type$>(&arena);\n"
+          "sail::RedisContext rctx(ctx);\n"
+          "$service_name$ srv;\n\n");
+      printer->Print(sub_vars,
+                     "size_t len;\n"
+                         "const char *cbuf = RedisModule_StringPtrLen(argv[1], &len);\n\n");
+      // Parsing
+      printer->Print(sub_vars,
+                     "if (obj->ParseFromString(cbuf)) {\n");
+
+      // Custom deserializer
+      if (custom_wrapper)
+        printer->Print(sub_vars,
+                       "  obj->wrapperDeserialize();\n");
+      printer->Print(sub_vars,
+                     "  if (srv.$name$(&rctx, obj, out_obj) != 0)\n"
+                         "    return REDISMODULE_ERR;\n"
+                         "  return REDISMODULE_OK;\n");
+      printer->Print(sub_vars,
+                     "} else {\n"
+                         "  return REDISMODULE_ERR;\n"
+                         "}\n");
+
+      printer->Outdent();
+      printer->Print("}\n\n");
+    }
+  }
+
+  /**
+   * Generates a function for loading the REDIS service
+   * @param printer protobuf printer object
+   */
+  void GenerateAPIDeclaration(io::Printer *printer) {
+    printer->Print(vars_,
+                   "int load$name$Service(RedisModuleCtx *ctx) {\n");
+    printer->Indent();
+
+    for (int i = 0; i < service_->method_count(); i++) {
+      const MethodDescriptor *method = service_->method(i);
+      std::map<string, string> sub_vars;
+      sub_vars["service_name"] = vars_["classname"];
+      sub_vars["name"] = method->name();
+      sub_vars["input_type"] = cpp::ClassName(method->input_type(), true);
+      sub_vars["output_type"] = cpp::ClassName(method->output_type(), true);
+
+      printer->Print(sub_vars,
+                     "RMUtil_RegisterWriteCmd(ctx, \"$service_name$.$name$\", &$service_name$$name$);\n\n");
+    }
+
+    printer->Print("return REDISMODULE_OK;\n");
+    printer->Outdent();
+    printer->Print("}\n\n");
   }
 
  private:
@@ -428,7 +534,10 @@ class RedisCodeGenerator : public CodeGenerator {
     printer.Print("#include <google/protobuf/any.h>\n"
                       "#include <google/protobuf/stubs/strutil.h>\n"
                       "#include <google/protobuf/text_format.h>\n"
-                      "#include <google/protobuf/util/json_util.h>\n");
+                      "#include <google/protobuf/util/json_util.h>\n"
+                      "#include <google/protobuf/arena.h>\n");
+
+
 
     // generates the include files
     for (int i = 0; i < file->public_dependency_count(); ++i) {
@@ -440,6 +549,10 @@ class RedisCodeGenerator : public CodeGenerator {
           "#include \"$dependency$\"\n",
           "dependency", dependency);
     }
+
+    printer.Print(
+        "#include \"$dependency$_service.h\"\n",
+        "dependency", base_name);
 
     // generates message include files
     for (int i = 0; i < file->dependency_count(); i++) {
@@ -477,6 +590,12 @@ class RedisCodeGenerator : public CodeGenerator {
 
       msg_gen.AddInclude(&printer);
     }
+    for (int i = 0; i < file->service_count(); ++i) {
+      auto service = file->service(i);
+      ServiceGenerator service_gen(service);
+
+      service_gen.AddInclude(&printer);
+    }
 
     // Redis include
     printer.Print("#include \"$dependency$\"\n", "dependency",
@@ -493,6 +612,15 @@ class RedisCodeGenerator : public CodeGenerator {
       MessageGenerator message_gen(message);
 
       message_gen.GenerateMessage(&printer);
+    }
+
+    // Service code generation
+    for (int i = 0; i < file->service_count(); ++i) {
+      auto service = file->service(i);
+      ServiceGenerator service_gen(service);
+
+      service_gen.GenerateRedisFunctions(&printer);
+      service_gen.GenerateAPIDeclaration(&printer);
     }
 
     {

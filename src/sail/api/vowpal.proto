@@ -29,7 +29,7 @@ message VowpalModel {
 }
 
 service VowpalService {
-    rpc New (VowpalMetadata) returns (VowpalModel);
+    option (simpl) = "VowpalServiceImpl";
     rpc Fit (VowpalModelRequest) returns (VowpalPrediction);
     rpc Predict(VowpalModelRequest) returns (VowpalPrediction);
 }

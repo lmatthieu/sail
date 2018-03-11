@@ -28,10 +28,10 @@ namespace vw {
 class VowpalServiceImpl : public VowpalService {
  public:
   virtual ~VowpalServiceImpl();
-  void Fit(sail::RedisContext *context,
+  int Fit(sail::RedisContext *context,
                    const ::sail::vw::VowpalModelRequest *request,
                    ::sail::vw::VowpalPrediction *response) override;
-  void Predict(sail::RedisContext *context,
+  int Predict(sail::RedisContext *context,
                const ::sail::vw::VowpalModelRequest *request,
                ::sail::vw::VowpalPrediction *response) override;
 };
